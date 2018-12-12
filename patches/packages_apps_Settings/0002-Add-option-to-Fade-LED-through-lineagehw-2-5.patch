@@ -1,0 +1,47 @@
+From 81ffcc849ec142fa682e788a4e204a84ac54accf Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sun, 22 Jul 2018 19:39:29 +0400
+Subject: [PATCH 2/3] Add option to Fade LED through lineagehw [2/5]
+
+Change-Id: I281e18b21f588df322e0d9bc20ad98f7d9bcb7f3
+---
+ res/values/cm_strings.xml                   | 4 ++++
+ res/xml/configure_notification_settings.xml | 7 +++++++
+ 2 files changed, 11 insertions(+)
+
+diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
+index dc9ae28..0460b9b 100644
+--- a/res/values/cm_strings.xml
++++ b/res/values/cm_strings.xml
+@@ -60,6 +60,10 @@
+     <string name="touchscreen_gesture_settings_title">Touchscreen gestures</string>
+     <string name="touchscreen_gesture_settings_summary">Perform various touchscreen gestures for quick actions</string>
+ 
++    <!-- Fade Led notification -->
++    <string name="fade_led_notification_title">Fade LED</string>
++    <string name="fade_led_notification_summary">Changes pulsating LED to Fading LED</string>
++
+     <!-- Proximity wake -->
+     <string name="proximity_wake_title">Prevent accidental wake-up</string>
+     <string name="proximity_wake_summary">Check the proximity sensor prior to waking up screen</string>
+diff --git a/res/xml/configure_notification_settings.xml b/res/xml/configure_notification_settings.xml
+index 974a5c3..095f47e 100644
+--- a/res/xml/configure_notification_settings.xml
++++ b/res/xml/configure_notification_settings.xml
+@@ -47,6 +47,13 @@
+         android:summary="@string/summary_placeholder"
+         android:ringtoneType="notification" />
+ 
++    <lineageos.preference.LineageSystemSettingSwitchPreference
++        android:key="fade_led_notification_enable"
++        android:title="@string/fade_led_notification_title"
++        android:summary="@string/fade_led_notification_summary"
++        android:defaultValue="false"
++        lineage:requiresFeature="lineagehardware:FEATURE_FADE_LED_NOTIFICATION" />
++
+     <!-- Battery light -->
+     <org.lineageos.internal.lineageparts.LineagePartsPreference
+         android:key="battery_lights"
+-- 
+2.7.4
+

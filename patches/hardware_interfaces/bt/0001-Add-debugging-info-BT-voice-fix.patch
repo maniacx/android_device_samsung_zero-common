@@ -1,0 +1,169 @@
+From 76bb608b18de717541b9efb631337224c1218a43 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Mon, 11 Jun 2018 18:58:25 +0800
+Subject: [PATCH] Add debugging info + BT voice fix
+
+Change-Id: I4bc5e7cb6884e43d348434923bd41fa5606c22e3
+---
+ bluetooth/1.0/default/bluetooth_hci.cc    | 14 +++++++++++++-
+ bluetooth/1.0/default/vendor_interface.cc | 23 ++++++++++++++---------
+ 2 files changed, 27 insertions(+), 10 deletions(-)
+
+diff --git a/bluetooth/1.0/default/bluetooth_hci.cc b/bluetooth/1.0/default/bluetooth_hci.cc
+index e14e3d7..a1fb7b3 100644
+--- a/bluetooth/1.0/default/bluetooth_hci.cc
++++ b/bluetooth/1.0/default/bluetooth_hci.cc
+@@ -14,7 +14,7 @@
+ // limitations under the License.
+ //
+ 
+-#define LOG_TAG "android.hardware.bluetooth@1.0-impl"
++#define LOG_TAG "uuuu android.hardware.bluetooth@1.0-impl uuuu"
+ #include "bluetooth_hci.h"
+ 
+ #include <log/log.h>
+@@ -59,6 +59,8 @@ Return<void> BluetoothHci::initialize(
+   if (cb == nullptr) {
+     ALOGE("cb == nullptr! -> Unable to call initializationComplete(ERR)");
+     return Void();
++  } else {
++    ALOGI("cb == nullptr! -> Sucesss");
+   }
+ 
+   death_recipient_->setHasDied(false);
+@@ -70,30 +72,40 @@ Return<void> BluetoothHci::initialize(
+             status ? Status::SUCCESS : Status::INITIALIZATION_ERROR);
+         if (!hidl_status.isOk()) {
+           ALOGE("VendorInterface -> Unable to call initializationComplete()");
++        } else {
++          ALOGI("VendorInterface -> initializationComplete()");
+         }
+       },
+       [cb](const hidl_vec<uint8_t>& packet) {
+         auto hidl_status = cb->hciEventReceived(packet);
+         if (!hidl_status.isOk()) {
+           ALOGE("VendorInterface -> Unable to call hciEventReceived()");
++        } else {
++          ALOGI("VendorInterface -> hciEventReceived()");
+         }
+       },
+       [cb](const hidl_vec<uint8_t>& packet) {
+         auto hidl_status = cb->aclDataReceived(packet);
+         if (!hidl_status.isOk()) {
+           ALOGE("VendorInterface -> Unable to call aclDataReceived()");
++        } else {
++          ALOGI("VendorInterface -> aclDataReceived()");
+         }
+       },
+       [cb](const hidl_vec<uint8_t>& packet) {
+         auto hidl_status = cb->scoDataReceived(packet);
+         if (!hidl_status.isOk()) {
+           ALOGE("VendorInterface -> Unable to call scoDataReceived()");
++        } else {
++          ALOGI("VendorInterface -> scoDataReceived()");
+         }
+       });
+   if (!rc) {
+     auto hidl_status = cb->initializationComplete(Status::INITIALIZATION_ERROR);
+     if (!hidl_status.isOk()) {
+       ALOGE("VendorInterface -> Unable to call initializationComplete(ERR)");
++    } else {
++      ALOGI("VendorInterface -> initializationComplete(ERR)");
+     }
+   }
+ 
+diff --git a/bluetooth/1.0/default/vendor_interface.cc b/bluetooth/1.0/default/vendor_interface.cc
+index 6ce2f11..cecee0e 100644
+--- a/bluetooth/1.0/default/vendor_interface.cc
++++ b/bluetooth/1.0/default/vendor_interface.cc
+@@ -16,7 +16,7 @@
+ 
+ #include "vendor_interface.h"
+ 
+-#define LOG_TAG "android.hardware.bluetooth@1.0-impl"
++#define LOG_TAG "android.hardware.bluetooth@1.0-impl-vendor"
+ #include <cutils/properties.h>
+ #include <utils/Log.h>
+ 
+@@ -97,15 +97,15 @@ void firmware_config_cb(bt_vendor_op_result_t result) {
+ }
+ 
+ void sco_config_cb(bt_vendor_op_result_t result) {
+-  ALOGD("%s result: %d", __func__, result);
++  ALOGI("%s result: %d", __func__, result);
+ }
+ 
+ void low_power_mode_cb(bt_vendor_op_result_t result) {
+-  ALOGD("%s result: %d", __func__, result);
++  ALOGI("%s result: %d", __func__, result);
+ }
+ 
+ void sco_audiostate_cb(bt_vendor_op_result_t result) {
+-  ALOGD("%s result: %d", __func__, result);
++  ALOGI("%s result: %d", __func__, result);
+ }
+ 
+ void* buffer_alloc_cb(int size) {
+@@ -120,12 +120,12 @@ void buffer_free_cb(void* buffer) {
+ }
+ 
+ void epilog_cb(bt_vendor_op_result_t result) {
+-  ALOGD("%s result: %d", __func__, result);
++  ALOGI("%s result: %d", __func__, result);
+ }
+ 
+ void a2dp_offload_cb(bt_vendor_op_result_t result, bt_vendor_opcode_t op,
+                      uint8_t av_handle) {
+-  ALOGD("%s result: %d, op: %d, handle: %d", __func__, result, op, av_handle);
++  ALOGI("%s result: %d, op: %d, handle: %d", __func__, result, op, av_handle);
+ }
+ 
+ const bt_vendor_callbacks_t lib_callbacks = {
+@@ -216,7 +216,7 @@ bool VendorInterface::Open(InitializeCompleteCallback initialize_complete_cb,
+     return false;
+   }
+ 
+-  ALOGD("%s vendor library loaded", __func__);
++  ALOGI("%s vendor library loaded", __func__);
+ 
+   // Power on the controller
+ 
+@@ -268,6 +268,7 @@ bool VendorInterface::Open(InitializeCompleteCallback initialize_complete_cb,
+   // Start configuring the firmware
+   firmware_startup_timer_ = new FirmwareStartupTimer();
+   lib_interface_->op(BT_VND_OP_FW_CFG, nullptr);
++//  lib_interface_->op(BT_VND_OP_SCO_CFG, nullptr);
+ 
+   return true;
+ }
+@@ -318,14 +319,16 @@ size_t VendorInterface::Send(uint8_t type, const uint8_t* data, size_t length) {
+     lpm_wake_deasserted = false;
+     bt_vendor_lpm_wake_state_t wakeState = BT_VND_LPM_WAKE_ASSERT;
+     lib_interface_->op(BT_VND_OP_LPM_WAKE_SET_STATE, &wakeState);
+-    ALOGV("%s: Sent wake before (%02x)", __func__, data[0] | (data[1] << 8));
++    ALOGI("%s: Sent wake before data", __func__);
+   }
+ 
++    ALOGI("%s: Send type %d, length %zd, data %02x:,  ", __func__, type, length, data[0] | (data[1] << 8));
++
+   return hci_->Send(type, data, length);
+ }
+ 
+ void VendorInterface::OnFirmwareConfigured(uint8_t result) {
+-  ALOGD("%s result: %d", __func__, result);
++  ALOGI("%s result: %d", __func__, result);
+ 
+   if (firmware_startup_timer_ != nullptr) {
+     delete firmware_startup_timer_;
+@@ -337,6 +340,8 @@ void VendorInterface::OnFirmwareConfigured(uint8_t result) {
+     initialize_complete_cb_ = nullptr;
+   }
+ 
++  lib_interface_->op(BT_VND_OP_SCO_CFG, nullptr);
++
+   lib_interface_->op(BT_VND_OP_GET_LPM_IDLE_TIMEOUT, &lpm_timeout_ms);
+   ALOGI("%s: lpm_timeout_ms %d", __func__, lpm_timeout_ms);
+ 
+-- 
+2.7.4
+

@@ -1,0 +1,27 @@
+From 4107e5284e96ef7551c96312d16d5592811b6f8e Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Tue, 15 May 2018 16:46:58 +0400
+Subject: [PATCH 05/14] exynos5camera: Remove JPEG quality option. Old times
+ has past and we have large storage. Pointless sacrificing speed and quality
+ for few MB's of storage space. Default quality is 96 as per previous patch.
+
+Change-Id: Ic4a128333e711441898a3f708816b2f411b6543a
+---
+ src/com/android/camera/PhotoMenu.java | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/com/android/camera/PhotoMenu.java b/src/com/android/camera/PhotoMenu.java
+index 0793d7e..8f4886b 100644
+--- a/src/com/android/camera/PhotoMenu.java
++++ b/src/com/android/camera/PhotoMenu.java
+@@ -185,7 +185,6 @@ public class PhotoMenu extends MenuController
+                 CameraSettings.KEY_FLASH_MODE,
+                 CameraSettings.KEY_RECORD_LOCATION,
+                 CameraSettings.KEY_PICTURE_SIZE,
+-                CameraSettings.KEY_JPEG_QUALITY,
+                 CameraSettings.KEY_TIMER,
+                 CameraSettings.KEY_CAMERA_SAVEPATH,
+                 CameraSettings.KEY_LONGSHOT,
+-- 
+2.7.4
+

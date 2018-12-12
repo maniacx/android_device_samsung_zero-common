@@ -1,0 +1,88 @@
+From 81d4af4b9ad1e2a03f768940872d383dbf6bc27d Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Tue, 15 May 2018 16:40:58 +0400
+Subject: [PATCH 04/14] exynos5camera: Use high jpeg quality version as
+ default. Also remove normal option, and set high jpeg quality to 96 as done
+ on samsung stock.
+
+Change-Id: Ie8e6665c41abf7d523662496b6e2e7b5b5cc8e8e
+---
+ res/values/qcomarrays.xml                  |  7 ++-----
+ res/values/qcomstrings.xml                 |  5 ++---
+ src/com/android/camera/CameraSettings.java | 10 +---------
+ 3 files changed, 5 insertions(+), 17 deletions(-)
+
+diff --git a/res/values/qcomarrays.xml b/res/values/qcomarrays.xml
+index 8fcd7c3..c7b29d8 100755
+--- a/res/values/qcomarrays.xml
++++ b/res/values/qcomarrays.xml
+@@ -182,20 +182,17 @@
+     <string-array name="pref_camera_jpegquality_entries" translatable="false">
+         <item>@string/pref_camera_jpegquality_entry_0</item>
+         <item>@string/pref_camera_jpegquality_entry_1</item>
+-        <item>@string/pref_camera_jpegquality_entry_2</item>
+     </string-array>
+ 
+     <string-array name="pref_camera_jpegquality_entryvalues" translatable="false">
+-        <item>55</item>
+         <item>85</item>
+-        <item>100</item>
++        <item>96</item>
+     </string-array>
+ 
+     <!-- Rough estimates of jpeg compression ratio corresponding to qualities defined above. -->
+     <integer-array name="jpegquality_compression_ratio">
+-        <item>48</item>
+         <item>20</item>
+-        <item>6</item>
++        <item>1</item>
+     </integer-array>
+ 
+     <!-- Camera Preferences Color effect dialog box entries -->
+diff --git a/res/values/qcomstrings.xml b/res/values/qcomstrings.xml
+index 4306363..37ca431 100755
+--- a/res/values/qcomstrings.xml
++++ b/res/values/qcomstrings.xml
+@@ -604,7 +604,7 @@
+ 
+     <!-- Default picture quality setting. See
+          pref_camera_jpegquality_entryvalues for possible values -->
+-    <string name="pref_camera_jpegquality_default" translatable="false">85</string>
++    <string name="pref_camera_jpegquality_default" translatable="false">96</string>
+ 
+     <!-- Default Picture format setting. Do not translate. -->
+     <string name="pref_camera_picture_format_default" translatable="false">jpeg</string>
+@@ -762,8 +762,7 @@
+ 
+     <!-- Settings screen, Picture quality dialog radio button choices -->
+     <string name="pref_camera_jpegquality_entry_0">Low</string>
+-    <string name="pref_camera_jpegquality_entry_1">Standard</string>
+-    <string name="pref_camera_jpegquality_entry_2">High</string>
++    <string name="pref_camera_jpegquality_entry_1">High</string>
+ 
+     <!-- Default auto histogram setting. Do not translate. -->
+     <string name="pref_camera_histogram_default" translatable="false">disable</string>
+diff --git a/src/com/android/camera/CameraSettings.java b/src/com/android/camera/CameraSettings.java
+index 9d56605..78b3476 100644
+--- a/src/com/android/camera/CameraSettings.java
++++ b/src/com/android/camera/CameraSettings.java
+@@ -1437,15 +1437,7 @@ public class CameraSettings {
+             version = 1;
+         }
+         if (version == 1) {
+-            // Change jpeg quality {65,75,85} to {normal,fine,superfine}
+-            String quality = pref.getString(KEY_JPEG_QUALITY, "85");
+-            if (quality.equals("65")) {
+-                quality = "normal";
+-            } else if (quality.equals("75")) {
+-                quality = "fine";
+-            } else {
+-                quality = context.getString(R.string.pref_camera_jpegquality_default);
+-            }
++            String quality = context.getString(R.string.pref_camera_jpegquality_default);
+             editor.putString(KEY_JPEG_QUALITY, quality);
+             version = 2;
+         }
+-- 
+2.7.4
+

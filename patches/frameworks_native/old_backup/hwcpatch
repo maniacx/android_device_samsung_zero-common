@@ -1,0 +1,49 @@
+From 7cd08f713ecbcad2dc26dca6c5a8944867b0c971 Mon Sep 17 00:00:00 2001
+From: Lukas0610 <mail@lukasberger.at>
+Date: Thu, 7 Jun 2018 19:44:24 +0200
+Subject: [PATCH] SurfaceFlinger_hwc1: fix state recognition of color
+ calibration matrix
+
+Previously, the state of the color calibration matrix was decided by the framework which sent an integer to determine it (non-zero: enable, zero: disabled).
+
+This caused the flinger to wrongly keep the matrix enabled (and the HWC disabled) even though the user disabled the color calibration utility.
+
+Correct this by also checking the actual sum the the matrix, with 4 being corresponding value for rgb(255, 255, 255), meaning color calibration is disabled.
+---
+ services/surfaceflinger/SurfaceFlinger_hwc1.cpp | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/services/surfaceflinger/SurfaceFlinger_hwc1.cpp b/services/surfaceflinger/SurfaceFlinger_hwc1.cpp
+index d4f65fe8a..dcec89b84 100644
+--- a/services/surfaceflinger/SurfaceFlinger_hwc1.cpp
++++ b/services/surfaceflinger/SurfaceFlinger_hwc1.cpp
+@@ -3547,6 +3547,8 @@ status_t SurfaceFlinger::onTransact(
+                 return NO_ERROR;
+             }
+             case 1015: {
++                float sum = 0.0F;
++
+                 // apply a color matrix
+                 n = data.readInt32();
+                 mHasColorMatrix = n ? 1 : 0;
+@@ -3557,11 +3559,18 @@ status_t SurfaceFlinger::onTransact(
+                     for (size_t i = 0 ; i < 4; i++) {
+                       for (size_t j = 0; j < 4; j++) {
+                           mColorMatrix[i][j] = data.readFloat();
++                          sum += mColorMatrix[i][j];
+                       }
+                     }
+-                } else {
++                }
++
++                // sum of matrix equals to 4 if the color calibration is deactivated
++                // framework still send a full matrix, resulting in a disabled HWC.
++                if (!n || ((int)sum) == 4) {
+                     mColorMatrix = mat4();
++                    mHasColorMatrix = false;
+                 }
++
+                 invalidateHwcGeometry();
+                 repaintEverything();
+                 return NO_ERROR;
+

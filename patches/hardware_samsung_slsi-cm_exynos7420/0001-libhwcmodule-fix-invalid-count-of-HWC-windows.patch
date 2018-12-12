@@ -1,0 +1,28 @@
+From 76686ed1fcc9de2c073970c2a15cb9aad9181415 Mon Sep 17 00:00:00 2001
+From: Lukas0610 <mail@lukasberger.at>
+Date: Sun, 18 Feb 2018 12:22:11 +0100
+Subject: [PATCH] libhwcmodule: fix invalid count of HWC-windows
+
+Thanks to https://github.com/Exynos7580/android_hardware_samsung_slsi-cm_exynos7580/commit/fc824ba0effbbd4779c2c5acef4068511bfcd0b2
+
+Change-Id: Ie55777d5f356c860b5e67a718dcf73478a005848
+---
+ libhwcmodule/ExynosHWCModule.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libhwcmodule/ExynosHWCModule.h b/libhwcmodule/ExynosHWCModule.h
+index 0086cde..c70d657 100644
+--- a/libhwcmodule/ExynosHWCModule.h
++++ b/libhwcmodule/ExynosHWCModule.h
+@@ -39,7 +39,7 @@
+ #define BLENDING_MAX        DECON_BLENDING_MAX
+ #define PIXEL_FORMAT_MAX    DECON_PIXEL_FORMAT_MAX
+ 
+-const size_t SOC_NUM_HW_WINDOWS = MAX_DECON_WIN;
++const size_t SOC_NUM_HW_WINDOWS = MAX_DECON_WIN - 2;
+ 
+ typedef decon_win_config fb_win_config;
+ typedef decon_win_config_data fb_win_config_data;
+-- 
+2.7.4
+

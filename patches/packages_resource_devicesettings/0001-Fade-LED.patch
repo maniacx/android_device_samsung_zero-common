@@ -1,0 +1,27 @@
+From fab8b7728e35aeffd45fecc0f2d2ec93c707be28 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Wed, 28 Mar 2018 08:16:19 +0400
+Subject: [PATCH] Fade LED
+
+Change-Id: If1c434acc6b149ad326dedd1f4a05dd40a05e011
+---
+ res/values/strings.xml | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/res/values/strings.xml b/res/values/strings.xml
+index 60ba0c2..68a4652 100644
+--- a/res/values/strings.xml
++++ b/res/values/strings.xml
+@@ -172,6 +172,9 @@
+     <string name="fingerprint_sleep_title">Fingerprint sleep</string>
+     <string name="fingerprint_sleep_summary">Press the fingerprint sensor to turn off the screen</string>
+ 
++    <!-- Fade Led notification -->
++    <string name="fade_led_notification_title">Fade LED</string>
++
+     <!-- High touch sensitivity -->
+     <string name="high_touch_sensitivity_title">High touch sensitivity</string>
+     <string name="high_touch_sensitivity_summary">Increase touchscreen sensitivity so it can be used while wearing gloves</string>
+-- 
+2.7.4
+

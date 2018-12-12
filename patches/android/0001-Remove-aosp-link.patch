@@ -1,0 +1,29 @@
+From 8d7710e0a046517b1b83d28015bb32f27dd4f35b Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Thu, 21 Jun 2018 08:45:22 +0800
+Subject: [PATCH] Remove aosp link
+
+Change-Id: I97c2936307024aff321322499b3e3ecaba9be3fd
+---
+ default.xml | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/default.xml b/default.xml
+index 119795c..4b64887 100644
+--- a/default.xml
++++ b/default.xml
+@@ -16,11 +16,6 @@
+   <remote  name="private"
+            fetch="ssh://git@github.com" />
+ 
+-  <remote  name="aosp"
+-           fetch="https://android.googlesource.com"
+-           review="android-review.googlesource.com"
+-           revision="refs/tags/android-8.1.0_r30" />
+-
+   <default revision="refs/heads/lineage-15.1"
+            remote="github"
+            sync-c="true"
+-- 
+2.7.4
+

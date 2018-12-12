@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<carrier_config_list>
+    <carrier_config>
+        <boolean name="world_phone_bool" value="true" />
+        <boolean name="show_cdma_choices_bool" value="true" />
+		<boolean name="show_apn_setting_cdma_bool" value="true" />
+    </carrier_config>
+    <carrier_config mcc="293" mnc="41">
+       <boolean name="carrier_wfc_ims_available_bool" value="true" />
+       <boolean name="carrier_volte_provisioning_required_bool" value="false" />
+       <boolean name="carrier_volte_available_bool" value="true" />
+    </carrier_config>
+    <carrier_config mcc="404" mnc="20">
+        <boolean name="carrier_volte_available_bool" value="true" />
+    </carrier_config>
+    <!-- Verizon hackery -->
+    <carrier_config mcc="204" mnc="04" gid1="BAE0000000000000">
+        <boolean name="disable_cdma_activation_code_bool" value="true" />
+    </carrier_config>
+    <carrier_config mcc="310" mnc="004">
+        <boolean name="disable_cdma_activation_code_bool" value="true" />
+    </carrier_config>
+    <carrier_config mcc="311" mnc="480">
+        <boolean name="disable_cdma_activation_code_bool" value="true" />
+    </carrier_config>
+
+    <!-- Sprint hackery -->
+    <carrier_config mcc="310" mnc="120">
+        <boolean name="sprint_mwi_quirk" value="true" />
+    </carrier_config>
+    <carrier_config mcc="311" mnc="490">
+        <boolean name="sprint_mwi_quirk" value="true" />
+    </carrier_config>
+    <carrier_config mcc="311" mnc="870">
+        <boolean name="sprint_mwi_quirk" value="true" />
+    </carrier_config>
+    <carrier_config mcc="312" mnc="530">
+        <boolean name="sprint_mwi_quirk" value="true" />
+    </carrier_config>
+</carrier_config_list>
+

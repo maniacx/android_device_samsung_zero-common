@@ -1,0 +1,40 @@
+From 2bf05239df1b115421b5413a403c530d734d071e Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sun, 22 Jul 2018 18:14:21 +0400
+Subject: [PATCH] build: Auto select, we are always unnofficial
+
+Change-Id: Icabd1f5b296f79ba1592ced676634409fc7201b1
+---
+ tools/changelog.sh  | 2 +-
+ tools/rr_variant.sh | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tools/changelog.sh b/tools/changelog.sh
+index 8038a61..929ffc0 100755
+--- a/tools/changelog.sh
++++ b/tools/changelog.sh
+@@ -51,7 +51,7 @@ echo -e "";
+ echo -e ${cya}" ▼ Type a number"${txtrst}
+ echo -e "";
+ # use 'export days_to_log=5' before '. build/envsetup.sh' were 5 is days to log
+-read -r -t 30 days_to_log || days_to_log=7
++read -r -t 0 days_to_log || days_to_log=1
+ fi
+ echo >> $Changelog;
+ echo " ▼ $source_name Ver 6.2.0 Changelog"    >> $Changelog;
+diff --git a/tools/rr_variant.sh b/tools/rr_variant.sh
+index 113cf00..a865724 100755
+--- a/tools/rr_variant.sh
++++ b/tools/rr_variant.sh
+@@ -43,7 +43,7 @@ echo -e "";
+ echo -e ${cya}" ▼ Pick a number"${txtrst}
+ echo -e "";
+ $normal
+-read -t 30 askvariant
++read -t 0 askvariant || askvariant=1
+ sleep 1
+ if [ "$askvariant" == "1" ]
+ then
+-- 
+2.7.4
+

@@ -1,0 +1,33 @@
+From e0d749b78cb406d18409c7a4b645a3e9eb846529 Mon Sep 17 00:00:00 2001
+From: "mingliang.x.lei" <mingliang.x.lei@sonymobile.com>
+Date: Wed, 9 Mar 2016 14:30:55 +0800
+Subject: [PATCH] Fix memory leak in Bluetooth settings
+
+Bluetooth settings screen has two categories. Each category should call
+removeAll() method to unregister a callback from CachedBluetoothDevice.
+But the method is not called for mPairedDevicesCategory.
+
+Bug: 30004142
+Test: manual - connect to Bluetooth device and then
+               open and close Bluetooth settings screen repeatedly
+
+Change-Id: I5a72994473ee2bb5fc3ad00176d9a930b4839099
+---
+ src/com/android/settings/bluetooth/BluetoothSettings.java | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/com/android/settings/bluetooth/BluetoothSettings.java b/src/com/android/settings/bluetooth/BluetoothSettings.java
+index 361bc2f..9789310 100644
+--- a/src/com/android/settings/bluetooth/BluetoothSettings.java
++++ b/src/com/android/settings/bluetooth/BluetoothSettings.java
+@@ -158,6 +158,7 @@ public class BluetoothSettings extends DeviceListPreferenceFragment implements I
+     @Override
+     public void onStop() {
+         super.onStop();
++        mPairedDevicesCategory.removeAll();
+         if (mBluetoothEnabler != null) {
+             mBluetoothEnabler.pause();
+         }
+-- 
+2.7.4
+

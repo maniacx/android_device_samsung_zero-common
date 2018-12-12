@@ -1,0 +1,26 @@
+From 4734d386bb33d5783b7d836c01374aa6af6e6a9f Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sat, 23 Jun 2018 11:05:45 +0800
+Subject: [PATCH 12/14] Remove Slow motion mode. Lets enable it when we get it
+ working
+
+Change-Id: I9b48c8997e5821c65d5a0e991518f22ecd36c334
+---
+ src/com/android/camera/VideoMenu.java | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/com/android/camera/VideoMenu.java b/src/com/android/camera/VideoMenu.java
+index 9e3ca35..067d5aa 100644
+--- a/src/com/android/camera/VideoMenu.java
++++ b/src/com/android/camera/VideoMenu.java
+@@ -113,7 +113,6 @@ public class VideoMenu extends MenuController
+                 CameraSettings.KEY_VIDEOCAMERA_FLASH_MODE,
+                 CameraSettings.KEY_VIDEO_QUALITY,
+                 CameraSettings.KEY_FAST_FPS,
+-                CameraSettings.KEY_VIDEO_HIGH_FRAME_RATE,
+                 CameraSettings.KEY_DIS,
+                 CameraSettings.KEY_VIDEO_HDR,
+                 CameraSettings.KEY_EXPOSURE,
+-- 
+2.7.4
+

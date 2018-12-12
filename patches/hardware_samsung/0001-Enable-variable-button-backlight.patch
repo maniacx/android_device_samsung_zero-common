@@ -1,0 +1,26 @@
+From 60304c94f3ddb505ba94391a4e3c171dc710f866 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Mon, 14 May 2018 13:22:59 +0400
+Subject: [PATCH 1/5] Enable variable button backlight
+
+Change-Id: Icb90348801c020bcfa07b82b84cc6ffb1365182e
+---
+ liblights/include/samsung_lights.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/liblights/include/samsung_lights.h b/liblights/include/samsung_lights.h
+index b866a4e..d4b7fe4 100644
+--- a/liblights/include/samsung_lights.h
++++ b/liblights/include/samsung_lights.h
+@@ -32,7 +32,7 @@
+ #define LED_BLN_NODE "/sys/class/misc/backlightnotification/notification_led"
+ 
+ // Uncomment to enable variable button brightness
+-//#define VAR_BUTTON_BRIGHTNESS 1
++#define VAR_BUTTON_BRIGHTNESS 1
+ 
+ /*
+  * Brightness adjustment factors
+-- 
+2.7.4
+

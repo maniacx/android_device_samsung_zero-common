@@ -1,0 +1,81 @@
+From 6ae6644470893c275cc9a9830c4d3cf94db5b8e3 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Wed, 20 Jun 2018 14:01:36 +0800
+Subject: [PATCH 3/5] dtbtool: sort dtb based on chip_id/hw_rev
+
+Change-Id: I7e5ef9df3eccde7076b8ea2e162408ab7c2b30bc
+---
+ dtbhtool/dtbimg.c | 25 ++++++-------------------
+ 1 file changed, 6 insertions(+), 19 deletions(-)
+
+diff --git a/dtbhtool/dtbimg.c b/dtbhtool/dtbimg.c
+index 744222f..8660e6f 100644
+--- a/dtbhtool/dtbimg.c
++++ b/dtbhtool/dtbimg.c
+@@ -75,7 +75,6 @@ struct dt_blob {
+     uint32_t offset;
+ 
+     void *payload;
+-    struct dt_blob *next;
+ };
+ 
+ static void *load_file(const char *fn, unsigned *_sz)
+@@ -115,8 +114,6 @@ void *load_dtbh_block(const char *dtb_path, unsigned pagesize, unsigned *_sz)
+     struct dt_entry *entries = NULL;
+     struct dt_entry *entry;
+     struct dt_blob *blob;
+-    struct dt_blob *blob_list = NULL;
+-    struct dt_blob *last_blob = NULL;
+     struct dirent *de;
+     unsigned new_count;
+     unsigned entry_count = 0;
+@@ -204,13 +201,6 @@ void *load_dtbh_block(const char *dtb_path, unsigned pagesize, unsigned *_sz)
+ 
+         blob->payload = dtb;
+         blob->size = dtb_sz;
+-        if (blob_list == NULL) {
+-            blob_list = blob;
+-            last_blob = blob;
+-        } else {
+-            last_blob->next = blob;
+-            last_blob = blob;
+-        }
+ 
+         blob_sz += (blob->size + pagemask) & ~pagemask;
+         new_count = entry_count + 1;
+@@ -248,16 +238,12 @@ void *load_dtbh_block(const char *dtb_path, unsigned pagesize, unsigned *_sz)
+ 
+     /* The size of the dt header is now known, calculate the blob offsets... */
+     offset = hdr_sz;
+-    for (blob = blob_list; blob; blob = blob->next) {
+-        blob->offset = offset;
+-        offset += (blob->size + pagemask) & ~pagemask;
+-    }
+-
+-    /* ...and update the entries */
+     for (c = 0; c < entry_count; c++) {
+         entry = &entries[c];
+ 
++        entry->blob->offset = offset;
+         entry->offset = entry->blob->offset;
++        offset += (entry->blob->size + pagemask) & ~pagemask;
+         entry->size = (entry->blob->size + pagemask) & ~pagemask;
+     }
+ 
+@@ -286,9 +272,10 @@ void *load_dtbh_block(const char *dtb_path, unsigned pagesize, unsigned *_sz)
+     /* add padding after dt header */
+     offset += pagesize - (offset & pagemask);
+ 
+-    for (blob = blob_list; blob; blob = blob->next) {
+-        memcpy(dtbh + offset, blob->payload, blob->size);
+-        offset += (blob->size + pagemask) & ~pagemask;
++    for (c = 0; c < entry_count; c++) {
++        entry = &entries[c];
++        memcpy(dtbh + offset, entry->blob->payload, entry->blob->size);
++        offset += (entry->blob->size + pagemask) & ~pagemask;
+     }
+ 
+     *_sz = hdr_sz + blob_sz;
+-- 
+2.7.4
+

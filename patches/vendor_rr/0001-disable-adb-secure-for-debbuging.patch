@@ -1,0 +1,26 @@
+From d1c900a65ba4db82db18af691d24fa001c3ad8bf Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Wed, 28 Mar 2018 08:18:23 +0400
+Subject: [PATCH] disable adb secure for debbuging
+
+Change-Id: I699b55f6ffdf608814001edc8b4bcfd38bbc5efd
+---
+ config/common.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/config/common.mk b/config/common.mk
+index e4053da..5a1e328 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -28,7 +28,7 @@ endif
+ 
+ ifneq ($(TARGET_BUILD_VARIANT),eng)
+ # Enable ADB authentication
+-PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.adb.secure=1
++PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.adb.secure=0
+ endif
+ 
+ ifeq ($(BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE),)
+-- 
+2.7.4
+

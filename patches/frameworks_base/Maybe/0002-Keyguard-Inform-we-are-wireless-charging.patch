@@ -1,0 +1,95 @@
+From e05f1e401be385125073e2026a2dbf3889b4dc1a Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Mon, 16 Apr 2018 16:17:33 +0400
+Subject: [PATCH 02/12] Keyguard: Inform we are wireless charging
+
+Change-Id: I79c629935263fb18e222a892b4ba7a8cb4c8af88
+---
+ packages/SystemUI/res-keyguard/values/strings.xml              |  8 ++++++++
+ packages/SystemUI/res/values/strings.xml                       |  6 ++++++
+ .../src/com/android/keyguard/KeyguardUpdateMonitor.java        |  4 ++++
+ .../systemui/statusbar/KeyguardIndicationController.java       | 10 ++++++++++
+ 4 files changed, 28 insertions(+)
+
+diff --git a/packages/SystemUI/res-keyguard/values/strings.xml b/packages/SystemUI/res-keyguard/values/strings.xml
+index 589f1c1..e5519f3 100644
+--- a/packages/SystemUI/res-keyguard/values/strings.xml
++++ b/packages/SystemUI/res-keyguard/values/strings.xml
+@@ -61,6 +61,14 @@
+     <string name="keyguard_plugged_in_charging_fast">Charging rapidly</string>
+ 
+     <!-- When the lock screen is showing and the phone plugged in, and the battery
++         is not fully charged, and it's plugged into a wireless fast charger, say that it's charging fast.  -->
++    <string name="keyguard_plugged_in_wireless_charging_fast">Wireless charging rapidly</string>
++
++    <!-- When the lock screen is showing and the phone plugged in, and the battery
++         is not fully charged, and it's plugged into a wireless charger, say that it's charging fast.  -->
++    <string name="keyguard_plugged_in_wireless_charging">Wireless Charging</string>
++
++    <!-- When the lock screen is showing and the phone plugged in, and the battery
+          is not fully charged, and it's plugged into a slow charger, say that it's charging slowly.  -->
+     <string name="keyguard_plugged_in_charging_slowly">Charging slowly</string>
+ 
+diff --git a/packages/SystemUI/res/values/strings.xml b/packages/SystemUI/res/values/strings.xml
+index 18ee67b..004e690 100644
+--- a/packages/SystemUI/res/values/strings.xml
++++ b/packages/SystemUI/res/values/strings.xml
+@@ -908,6 +908,12 @@
+     <!-- Indication on the keyguard that is shown when the device is charging rapidly. Should match keyguard_plugged_in_charging_fast [CHAR LIMIT=40]-->
+     <string name="keyguard_indication_charging_time_fast">Charging rapidly (<xliff:g id="charging_time_left" example="4 hours and 2 minutes">%s</xliff:g> until full)</string>
+ 
++    <!-- Indication on the keyguard that is shown when the device is charging. [CHAR LIMIT=40]-->
++    <string name="keyguard_indication_wireless_charging_time">Charging (<xliff:g id="charging_time_left" example="4 hours and 2 minutes">%s</xliff:g> until full)</string>
++
++    <!-- Indication on the keyguard that is shown when the device is charging rapidly. Should match keyguard_plugged_in_charging_fast [CHAR LIMIT=40]-->
++    <string name="keyguard_indication_wireless_charging_time_fast">Charging rapidly (<xliff:g id="charging_time_left" example="4 hours and 2 minutes">%s</xliff:g> until full)</string>
++
+     <!-- Indication on the keyguard that is shown when the device is charging slowly. Should match keyguard_plugged_in_charging_slowly [CHAR LIMIT=40]-->
+     <string name="keyguard_indication_charging_time_slowly">Charging slowly (<xliff:g id="charging_time_left" example="4 hours and 2 minutes">%s</xliff:g> until full)</string>
+ 
+diff --git a/packages/SystemUI/src/com/android/keyguard/KeyguardUpdateMonitor.java b/packages/SystemUI/src/com/android/keyguard/KeyguardUpdateMonitor.java
+index ec7ed7f..d924009 100644
+--- a/packages/SystemUI/src/com/android/keyguard/KeyguardUpdateMonitor.java
++++ b/packages/SystemUI/src/com/android/keyguard/KeyguardUpdateMonitor.java
+@@ -933,6 +933,8 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
+         public static final int CHARGING_FAST = 2;
+         public static final int CHARGING_DASH = 3;
+         public static final int CHARGING_TURBO_POWER = 4;
++        public static final int CHARGING_WIRELESS = 5;
++        public static final int CHARGING_WIRELESS_FAST = 6;
+ 
+         public final int status;
+         public final int level;
+@@ -990,6 +992,8 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
+         public final int getChargingSpeed(int slowThreshold, int fastThreshold) {
+             return dashChargeStatus ? CHARGING_DASH :
+                     turboPowerStatus ? CHARGING_TURBO_POWER :
++                    ((plugged == BatteryManager.BATTERY_PLUGGED_WIRELESS) && (maxChargingWattage > fastThreshold)) ? CHARGING_WIRELESS_FAST :
++                    (plugged == BatteryManager.BATTERY_PLUGGED_WIRELESS) ? CHARGING_WIRELESS :
+                     maxChargingWattage <= 0 ? CHARGING_UNKNOWN :
+                     maxChargingWattage < slowThreshold ? CHARGING_SLOWLY :
+                     maxChargingWattage > fastThreshold ? CHARGING_FAST :
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/KeyguardIndicationController.java b/packages/SystemUI/src/com/android/systemui/statusbar/KeyguardIndicationController.java
+index 4658c68..6ba49a2c 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/KeyguardIndicationController.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/KeyguardIndicationController.java
+@@ -365,6 +365,16 @@ public class KeyguardIndicationController {
+ 
+         int chargingId;
+         switch (mChargingSpeed) {
++            case KeyguardUpdateMonitor.BatteryStatus.CHARGING_WIRELESS_FAST:
++                chargingId = hasChargingTime
++                        ? R.string.keyguard_indication_wireless_charging_time_fast
++                        : R.string.keyguard_plugged_in_wireless_charging_fast;
++                break;
++            case KeyguardUpdateMonitor.BatteryStatus.CHARGING_WIRELESS:
++                chargingId = hasChargingTime
++                        ? R.string.keyguard_indication_wireless_charging_time
++                        : R.string.keyguard_plugged_in_wireless_charging;
++                break;
+             case KeyguardUpdateMonitor.BatteryStatus.CHARGING_FAST:
+                 chargingId = hasChargingTime
+                         ? R.string.keyguard_indication_charging_time_fast
+-- 
+2.7.4
+

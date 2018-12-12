@@ -1,0 +1,30 @@
+From 49de94185b0df122b42dd90179accf3ac2a0fb50 Mon Sep 17 00:00:00 2001
+From: Satheesh Kumar Pallemoni <spallemo@codeaurora.org>
+Date: Wed, 21 Mar 2018 11:08:25 +0530
+Subject: [PATCH 11/18] Don't set A2dpsuspend flag to false when a new A2dp
+ sink connects.
+
+Don't set A2dpsuspend flag to false when a new A2dp sink connects.
+
+CRs-Fixed: 2212439
+Change-Id: I8996b9ccd1a1dd8e0adaaad6867803dae05b66e5
+---
+ services/core/java/com/android/server/audio/AudioService.java | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/services/core/java/com/android/server/audio/AudioService.java b/services/core/java/com/android/server/audio/AudioService.java
+index 14bbd06..977c970 100644
+--- a/services/core/java/com/android/server/audio/AudioService.java
++++ b/services/core/java/com/android/server/audio/AudioService.java
+@@ -5389,8 +5389,6 @@ public class AudioService extends IAudioService.Stub
+         setBluetoothA2dpOnInt(true, eventSource);
+         AudioSystem.setDeviceConnectionState(AudioSystem.DEVICE_OUT_BLUETOOTH_A2DP,
+                 AudioSystem.DEVICE_STATE_AVAILABLE, address, name);
+-        // Reset A2DP suspend state each time a new sink is connected
+-        AudioSystem.setParameters("A2dpSuspended=false");
+         mConnectedDevices.put(
+                 makeDeviceListKey(AudioSystem.DEVICE_OUT_BLUETOOTH_A2DP, address),
+                 new DeviceListSpec(AudioSystem.DEVICE_OUT_BLUETOOTH_A2DP, name,
+-- 
+2.7.4
+

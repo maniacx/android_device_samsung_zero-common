@@ -1,0 +1,54 @@
+From c256de18dad1ea3d71d0934c96b9329a1ec00da9 Mon Sep 17 00:00:00 2001
+From: Sumit Bajpai <sbajpai@codeaurora.org>
+Date: Mon, 22 Feb 2016 19:41:33 +0530
+Subject: [PATCH 09/18] BT: Send info if call is CS type from telecomm service
+ to BT apps.
+
+The change adds broadcast intent for updating call info from telecomm
+service to bluetooth application.
+
+CRs-Fixed: 977025
+Change-Id: I18d3a22d25099906d86efb0412f309696c02e321
+---
+ telecomm/java/android/telecom/TelecomManager.java | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/telecomm/java/android/telecom/TelecomManager.java b/telecomm/java/android/telecom/TelecomManager.java
+index 53ebbe4..85e929a 100644
+--- a/telecomm/java/android/telecom/TelecomManager.java
++++ b/telecomm/java/android/telecom/TelecomManager.java
+@@ -167,6 +167,17 @@ public class TelecomManager {
+             "android.telecom.action.DEFAULT_DIALER_CHANGED";
+ 
+     /**
++     *@hide Broadcast intent action indicating the call type(CS call or Non-CS call).
++     * The string extra {@link #EXTRA_CALL_TYPE_CS} will contain the
++     * boolean value true if call is CS call else false.
++     *
++     * @see #EXTRA_CALL_TYPE_CS
++     */
++    public static final String ACTION_CALL_TYPE =
++            "codeaurora.telecom.action.CALL_TYPE";
++
++
++    /**
+      * Extra value used to provide the package name for {@link #ACTION_CHANGE_DEFAULT_DIALER}.
+      */
+     public static final String EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME =
+@@ -306,6 +317,13 @@ public class TelecomManager {
+             "android.telecom.extra.CALL_TECHNOLOGY_TYPE";
+ 
+     /**
++     *@hide  Extra value used to provide the call type for {@link #ACTION_CALL_TYPE}.
++     */
++    public static final String EXTRA_CALL_TYPE_CS =
++            "codeaurora.telecom.extra.CALL_TYPE_CS";
++
++
++    /**
+      * An optional {@link android.content.Intent#ACTION_CALL} intent extra denoting the
+      * package name of the app specifying an alternative gateway for the call.
+      * The value is a string.
+-- 
+2.7.4
+

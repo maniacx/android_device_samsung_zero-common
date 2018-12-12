@@ -1,0 +1,37 @@
+From fac1ac4f5aae13ad4a4104bedfe2b151cba6ea12 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sat, 25 Aug 2018 07:47:58 +0800
+Subject: [PATCH 13/18] bluetooth: Adjust battery level for bluetooth devices.
+
+Values kanged from onmirom.
+
+Change-Id: Id729ed0ae110ca6151bb207c362648bbc4ff21f3
+---
+ .../android/systemui/statusbar/phone/PhoneStatusBarPolicy.java    | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/phone/PhoneStatusBarPolicy.java b/packages/SystemUI/src/com/android/systemui/statusbar/phone/PhoneStatusBarPolicy.java
+index 49ab54c..480608a 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/phone/PhoneStatusBarPolicy.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/phone/PhoneStatusBarPolicy.java
+@@ -429,13 +429,13 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
+             bluetoothEnabled = mBluetooth.isBluetoothEnabled();
+             if (mBluetooth.isBluetoothConnected()) {
+                 int batteryLevel = mBluetooth.getLastDevice().getBatteryLevel();
+-                if (batteryLevel == 100) {
++                if (batteryLevel > 85) {
+                     iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_5;
+-                } else if (batteryLevel > 75) {
++                } else if (batteryLevel > 60) {
+                     iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_4;
+-                } else if (batteryLevel > 50) {
++                } else if (batteryLevel > 40) {
+                     iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_3;
+-                } else if (batteryLevel > 25) {
++                } else if (batteryLevel > 15) {
+                     iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_2;
+                 } else if (batteryLevel > 0) {
+                     iconId = R.drawable.stat_sys_data_bluetooth_connected_battery_1;
+-- 
+2.7.4
+

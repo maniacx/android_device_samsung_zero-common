@@ -1,0 +1,52 @@
+From b2ac78285cf22e358fda8dc645be193f0624e8c2 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sat, 18 Mar 2017 16:11:38 +0400
+Subject: [PATCH] exynos7420: Detect only wisol chip id for exynos7420.
+
+All chip id use same firmware except for wisol.
+
+Change-Id: I921ef7cf486c7aee542b3f1b26d810c8fa877354
+---
+ Android.mk     | 3 +++
+ src/hardware.c | 4 ++--
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/Android.mk b/Android.mk
+index 343ef06..4b02902 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -56,6 +56,9 @@ LOCAL_PROPRIETARY_MODULE := true
+ ifeq ($(BOARD_HAVE_SAMSUNG_BLUETOOTH),true)
+     LOCAL_CFLAGS += -DSAMSUNG_BLUETOOTH
+     LOCAL_C_INCLUDES += hardware/samsung/macloader/include
++ifeq ($(TARGET_BOOTLOADER_BOARD_NAME), universal7420)
++    LOCAL_CFLAGS += -DDETECT_WISOL_ONLY
++endif
+ endif
+ 
+ ifeq ($(BCM_BLUETOOTH_MANTA_BUG), true)
+diff --git a/src/hardware.c b/src/hardware.c
+index 8eceaef..cd3ad7d 100644
+--- a/src/hardware.c
++++ b/src/hardware.c
+@@ -460,7 +460,7 @@ static const char *hw_samsung_bluetooth_type()
+     if (nread <= 0) {
+         return NULL;
+     }
+-
++#ifndef DETECT_WISOL_ONLY
+     if (strncmp(buf, "murata", 6) == 0)
+         return "murata";
+ 
+@@ -472,7 +472,7 @@ static const char *hw_samsung_bluetooth_type()
+ 
+     if (strncmp(buf, "semco", 5) == 0)
+         return "semco";
+-
++#endif
+     if (strncmp(buf, "wisol", 5) == 0)
+         return "wisol";
+ 
+-- 
+2.7.4
+

@@ -1,0 +1,53 @@
+From 41cc4a7afd9a5f18e9fc15b181ba8635647354b0 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Mon, 9 Jul 2018 08:00:31 +0400
+Subject: [PATCH 2/2] exynos5camera: Add lib and jar for scamera
+
+Change-Id: I215bd2cee560d4ab8e31aa8f49399b10cfef3c92
+---
+ Android.mk | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/Android.mk b/Android.mk
+index 0af8c52..3adf3f8 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -8,6 +8,8 @@ LOCAL_STATIC_JAVA_LIBRARIES := android-support-v13
+ LOCAL_STATIC_JAVA_LIBRARIES += android-support-v4
+ LOCAL_STATIC_JAVA_LIBRARIES += xmp_toolkit
+ LOCAL_STATIC_JAVA_LIBRARIES += zxing-core
++LOCAL_STATIC_JAVA_LIBRARIES += scamera
++LOCAL_STATIC_JAVA_LIBRARIES += scamera-sdk
+ 
+ LOCAL_SRC_FILES := $(call all-java-files-under, src)
+ LOCAL_SRC_FILES += $(call all-java-files-under, src_pd)
+@@ -50,9 +52,13 @@ LOCAL_PROGUARD_FLAG_FILES := proguard.flags
+ # the libraries in the APK, otherwise just put them in /system/lib and
+ # leave them out of the APK
+ ifneq (,$(TARGET_BUILD_APPS))
+-  LOCAL_JNI_SHARED_LIBRARIES := libjni_snapmosaic libjni_snaptinyplanet libjni_snapimageutil
++  LOCAL_JNI_SHARED_LIBRARIES := libjni_snapmosaic libjni_snaptinyplanet libjni_snapimageutil \
++            libdmcFaceEngine libscamera_core libscamera_dof libscamera_ipx libscamera_jni \
++            libscamera_panorama libscamera_util libsrc_haze_removal_capture libsrc_haze_removal_preview
+ else
+-  LOCAL_REQUIRED_MODULES := libjni_snapmosaic libjni_snaptinyplanet libjni_snapimageutil
++  LOCAL_REQUIRED_MODULES := libjni_snapmosaic libjni_snaptinyplanet libjni_snapimageutil \
++            libdmcFaceEngine libscamera_core libscamera_dof libscamera_ipx libscamera_jni \
++            libscamera_panorama libscamera_util libsrc_haze_removal_capture libsrc_haze_removal_preview
+ endif
+ 
+ include $(BUILD_PACKAGE)
+@@ -62,7 +68,9 @@ include $(CLEAR_VARS)
+ LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES += \
+     qreader-core:quickReader/libs/core-1.9.3.aar \
+     qreader-zxing:quickReader/libs/zxing-1.9.3.aar \
+-    zxing-core:quickReader/libs/zxing-core-g-2.3.1.jar
++    zxing-core:quickReader/libs/zxing-core-g-2.3.1.jar \
++    scamera:sCamera/libs/camera-v1.3.0.jar \
++    scamera-sdk:sCamera/libs/sdk-v1.0.0.jar
+ 
+ include $(BUILD_MULTI_PREBUILT)
+ 
+-- 
+2.7.4
+

@@ -1,0 +1,36 @@
+From aa25d85754e90643faa5d7e7e9a4db9397c7cc29 Mon Sep 17 00:00:00 2001
+From: Satish Kodishala <skodisha@codeaurora.org>
+Date: Tue, 9 Jan 2018 14:39:38 +0530
+Subject: [PATCH 08/18] Don't reset audio route if setBluetoothScoOn is called
+ without SCO connection
+
+If third party applications call setBluetoothScoOn(false) when
+there is no SCO, mForcedUseForCommExt gets set to audio route
+FORCE_NONE which is speaker. If a call is made/accepted, call
+audio will be on speaker instead of handset.
+
+CRs-Fixed: 2171297
+Change-Id: Ic7ae54d52cf2012caccafcd65d7e915cf0fb0a53
+---
+ services/core/java/com/android/server/audio/AudioService.java | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/services/core/java/com/android/server/audio/AudioService.java b/services/core/java/com/android/server/audio/AudioService.java
+index 970c536..14bbd06 100644
+--- a/services/core/java/com/android/server/audio/AudioService.java
++++ b/services/core/java/com/android/server/audio/AudioService.java
+@@ -3037,7 +3037,10 @@ public class AudioService extends IAudioService.Stub
+ 
+         // Only enable calls from system components
+         if (Binder.getCallingUid() >= FIRST_APPLICATION_UID) {
+-            mForcedUseForCommExt = on ? AudioSystem.FORCE_BT_SCO : AudioSystem.FORCE_NONE;
++            if (on)
++                mForcedUseForCommExt = AudioSystem.FORCE_BT_SCO;
++            else if (mForcedUseForCommExt == AudioSystem.FORCE_BT_SCO)
++                mForcedUseForCommExt = AudioSystem.FORCE_NONE;
+             return;
+         }
+ 
+-- 
+2.7.4
+

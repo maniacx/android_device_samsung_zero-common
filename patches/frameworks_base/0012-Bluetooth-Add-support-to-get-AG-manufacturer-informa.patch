@@ -1,0 +1,53 @@
+From 2d7707c76be75872b0a92ea72c76ae68dfdd6da6 Mon Sep 17 00:00:00 2001
+From: Song Gao <songg@codeaurora.org>
+Date: Wed, 18 Apr 2018 15:57:57 +0800
+Subject: [PATCH 12/18] Bluetooth: Add support to get AG manufacturer
+ information
+
+Added strings to enable Bluetooth applications to receive
+AG information broadcasted by Headset Client State Machine.
+
+Change-Id: Icc854942879f7f0242c9fa251b804793325db6c1
+---
+ .../java/android/bluetooth/BluetoothHeadsetClient.java | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/core/java/android/bluetooth/BluetoothHeadsetClient.java b/core/java/android/bluetooth/BluetoothHeadsetClient.java
+index 73a16de..35c429e 100644
+--- a/core/java/android/bluetooth/BluetoothHeadsetClient.java
++++ b/core/java/android/bluetooth/BluetoothHeadsetClient.java
+@@ -101,7 +101,9 @@ public final class BluetoothHeadsetClient implements BluetoothProfile {
+      * {@link #EXTRA_BATTERY_LEVEL},
+      * {@link #EXTRA_OPERATOR_NAME},
+      * {@link #EXTRA_VOICE_RECOGNITION},
+-     * {@link #EXTRA_IN_BAND_RING}</p>
++     * {@link #EXTRA_IN_BAND_RING},
++     * {@link #EXTRA_MANF_ID},
++     * {@link #EXTRA_MANF_MODEL}</p>
+      */
+     public static final String ACTION_AG_EVENT =
+             "android.bluetooth.headsetclient.profile.action.AG_EVENT";
+@@ -207,6 +209,20 @@ public final class BluetoothHeadsetClient implements BluetoothProfile {
+             "android.bluetooth.headsetclient.extra.SUBSCRIBER_INFO";
+ 
+     /**
++     * Extra for AG_EVENT intent indicates manufacturer identification.
++     * <p>Value: <code>String</code> containing manufacturer identification.</p>
++     */
++    public static final String EXTRA_MANF_ID =
++            "android.bluetooth.headsetclient.extra.MANF_ID";
++
++    /**
++     * Extra for AG_EVENT intent indicates manufacturer model.
++     * <p>Value: <code>String</code> containing manufacturer model.</p>
++     */
++    public static final String EXTRA_MANF_MODEL =
++            "android.bluetooth.headsetclient.extra.MANF_MODEL";
++
++    /**
+      *  Extra for AG_CALL_CHANGED intent indicates the
+      *  {@link BluetoothHeadsetClientCall} object that has changed.
+      */
+-- 
+2.7.4
+

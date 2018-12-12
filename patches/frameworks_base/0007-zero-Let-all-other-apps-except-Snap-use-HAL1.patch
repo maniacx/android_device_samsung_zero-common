@@ -1,0 +1,36 @@
+From 7f2642d662a306b190880b8b543c0261f2599a14 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sat, 26 May 2018 17:07:16 +0400
+Subject: [PATCH 07/18] zero: Let all other apps (except Snap) use HAL1.
+
+Change-Id: If8b810151290f827cc05e77f1237e9991559e5f9
+---
+ core/java/android/hardware/Camera.java | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/core/java/android/hardware/Camera.java b/core/java/android/hardware/Camera.java
+index 5e02273..64cf4a0 100644
+--- a/core/java/android/hardware/Camera.java
++++ b/core/java/android/hardware/Camera.java
+@@ -567,17 +567,8 @@ public class Camera {
+ 
+         String packageName = ActivityThread.currentOpPackageName();
+ 
+-        //Force HAL1 if the package name falls in this bucket
+-        String packageList = SystemProperties.get("camera.hal1.packagelist", "");
+-        if (packageList.length() > 0) {
+-            TextUtils.StringSplitter splitter = new TextUtils.SimpleStringSplitter(',');
+-            splitter.setString(packageList);
+-            for (String str : splitter) {
+-                if (packageName.equals(str)) {
++        if (!packageName.equals("org.lineageos.snap")) {
+                     halVersion = CAMERA_HAL_API_VERSION_1_0;
+-                    break;
+-                }
+-            }
+         }
+         return native_setup(new WeakReference<Camera>(this), cameraId, halVersion, packageName);
+     }
+-- 
+2.7.4
+

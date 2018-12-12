@@ -1,0 +1,176 @@
+From 9e8366ef2bbf53aa4fcb93e7858ee527eff8f32d Mon Sep 17 00:00:00 2001
+From: Fei Zheng <zfei@codeaurora.org>
+Date: Wed, 17 Jan 2018 11:27:46 +0800
+Subject: [PATCH 10/18] Bluetooth: Implement API to get device identification
+ information
+
+Change-Id: I82928ffa2384f6777b850f2b14a62d20e915121c
+Signed-off-by: Fei Zheng <zfei@codeaurora.org>
+---
+ core/java/android/bluetooth/BluetoothUuid.java |   6 +-
+ core/java/android/bluetooth/SdpDipRecord.java  | 135 +++++++++++++++++++++++++
+ 2 files changed, 139 insertions(+), 2 deletions(-)
+ create mode 100644 core/java/android/bluetooth/SdpDipRecord.java
+
+diff --git a/core/java/android/bluetooth/BluetoothUuid.java b/core/java/android/bluetooth/BluetoothUuid.java
+index 243579a..7e59542 100644
+--- a/core/java/android/bluetooth/BluetoothUuid.java
++++ b/core/java/android/bluetooth/BluetoothUuid.java
+@@ -76,9 +76,11 @@ public final class BluetoothUuid {
+             ParcelUuid.fromString("00001133-0000-1000-8000-00805F9B34FB");
+     public static final ParcelUuid MAS =
+             ParcelUuid.fromString("00001132-0000-1000-8000-00805F9B34FB");
+-  public static final ParcelUuid SAP =
++    public static final ParcelUuid SAP =
+             ParcelUuid.fromString("0000112D-0000-1000-8000-00805F9B34FB");
+-			
++    public static final ParcelUuid DIP =
++              ParcelUuid.fromString("00001200-0000-1000-8000-00805F9B34FB");
++
+     public static final ParcelUuid BASE_UUID =
+             ParcelUuid.fromString("00000000-0000-1000-8000-00805F9B34FB");
+ 
+diff --git a/core/java/android/bluetooth/SdpDipRecord.java b/core/java/android/bluetooth/SdpDipRecord.java
+new file mode 100644
+index 0000000..6a27249
+--- /dev/null
++++ b/core/java/android/bluetooth/SdpDipRecord.java
+@@ -0,0 +1,135 @@
++/*
++* Copyright (c) 2018, The Linux Foundation. All rights reserved.
++* Not a Contribution.
++*
++* Copyright (C) 2015 Samsung System LSI
++* Licensed under the Apache License, Version 2.0 (the "License");
++* you may not use this file except in compliance with the License.
++* You may obtain a copy of the License at
++*
++*      http://www.apache.org/licenses/LICENSE-2.0
++*
++* Unless required by applicable law or agreed to in writing, software
++* distributed under the License is distributed on an "AS IS" BASIS,
++* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++* See the License for the specific language governing permissions and
++* limitations under the License.
++*/
++package android.bluetooth;
++
++import java.util.Arrays;
++
++import android.os.Parcel;
++import android.os.Parcelable;
++
++/**
++ * Data representation of a Object Push Profile Server side SDP record.
++ */
++/** @hide */
++public class SdpDipRecord implements Parcelable {
++    private final int mSpecificationId;
++    private final int mVendorId;
++    private final int mVendorIdSource;
++    private final int mProductId;
++    private final int mVersion;
++    private final boolean mPrimaryRecord;
++
++    private final String mClientExecutableUrl;  /* optional */
++    private final String mServiceDescription;   /* optional */
++    private final String mDocumentationUrl;     /* optional */
++
++    public SdpDipRecord(int specificationId,
++                            int vendorId, int vendorIdSource,
++                            int productId, int version,
++                            boolean primaryRecord,
++                            String clientExecutableUrl,
++                            String serviceDescription,
++                            String documentationUrl) {
++        super();
++        this.mSpecificationId = specificationId;
++        this.mVendorId = vendorId;
++        this.mVendorIdSource = vendorIdSource;
++        this.mProductId = productId;
++        this.mVersion = version;
++        this.mPrimaryRecord = primaryRecord;
++        this.mClientExecutableUrl = clientExecutableUrl;
++        this.mServiceDescription = serviceDescription;
++        this.mDocumentationUrl = documentationUrl;
++    }
++
++    public SdpDipRecord(Parcel in){
++        this.mSpecificationId = in.readInt();
++        this.mVendorId = in.readInt();
++        this.mVendorIdSource = in.readInt();
++        this.mProductId = in.readInt();
++        this.mVersion = in.readInt();
++        this.mPrimaryRecord = in.readBoolean();
++        this.mClientExecutableUrl = in.readString();
++        this.mServiceDescription = in.readString();
++        this.mDocumentationUrl = in.readString();
++    }
++
++    public int getSpecificationId() {
++        return mSpecificationId;
++    }
++
++    public int getVendorId() {
++        return mVendorId;
++    }
++
++    public int getVendorIdSource() {
++        return mVendorIdSource;
++    }
++
++    public int getProductId() {
++        return mProductId;
++    }
++
++    public int getVersion() {
++        return mVersion;
++    }
++
++    public boolean getPrimaryRecord() {
++        return mPrimaryRecord;
++    }
++
++    public String getClientExecutableUrl() {
++        return mClientExecutableUrl;
++    }
++
++    public String getServiceDescription() {
++        return mServiceDescription;
++    }
++
++    public String getDocumentationUrl() {
++        return mDocumentationUrl;
++    }
++
++    @Override
++    public void writeToParcel(Parcel dest, int flags) {
++        dest.writeInt(mSpecificationId);
++        dest.writeInt(mVendorId);
++        dest.writeInt(mVendorIdSource);
++        dest.writeInt(mProductId);
++        dest.writeInt(mVersion);
++        dest.writeBoolean(mPrimaryRecord);
++        dest.writeString(mClientExecutableUrl);
++        dest.writeString(mServiceDescription);
++        dest.writeString(mDocumentationUrl);
++    }
++
++    @Override
++    public int describeContents() {
++        /* No special objects */
++        return 0;
++    }
++
++    public static  final Parcelable.Creator CREATOR = new Parcelable.Creator() {
++        public SdpDipRecord createFromParcel(Parcel in) {
++            return new SdpDipRecord(in);
++        }
++        public SdpDipRecord[] newArray(int size) {
++            return new SdpDipRecord[size];
++        }
++    };
++}
+-- 
+2.7.4
+

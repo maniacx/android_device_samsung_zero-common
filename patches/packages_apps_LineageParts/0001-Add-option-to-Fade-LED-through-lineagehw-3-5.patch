@@ -1,0 +1,79 @@
+From fab99ec890c04cb0654533261ee666982006d775 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Mon, 14 May 2018 09:27:18 +0400
+Subject: [PATCH] Add option to Fade LED through lineagehw [3/5]
+
+---
+ res/values/arrays.xml                                | 20 ++++++++++----------
+ res/xml/notification_light_settings.xml              |  3 ++-
+ .../ApplicationLightPreference.java                  |  2 +-
+ 3 files changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/res/values/arrays.xml b/res/values/arrays.xml
+index d66ebca..264ecb2 100644
+--- a/res/values/arrays.xml
++++ b/res/values/arrays.xml
+@@ -27,11 +27,11 @@
+ 
+     <string-array name="notification_pulse_length_values" translatable="false">
+         <item>1</item>
+-        <item>250</item>
+-        <item>500</item>
+-        <item>1000</item>
+-        <item>2000</item>
+-        <item>5000</item>
++        <item>200</item>
++        <item>400</item>
++        <item>800</item>
++        <item>1600</item>
++        <item>3200</item>
+     </string-array>
+ 
+     <string-array name="notification_pulse_speed_entries" translatable="false">
+@@ -43,11 +43,11 @@
+     </string-array>
+ 
+     <string-array name="notification_pulse_speed_values" translatable="false">
+-        <item>250</item>
+-        <item>500</item>
+-        <item>1000</item>
+-        <item>2000</item>
+-        <item>5000</item>
++        <item>200</item>
++        <item>400</item>
++        <item>800</item>
++        <item>1600</item>
++        <item>3200</item>
+     </string-array>
+ 
+     <!-- Hardware key rebinding -->
+diff --git a/res/xml/notification_light_settings.xml b/res/xml/notification_light_settings.xml
+index 157057a..74a86e9 100644
+--- a/res/xml/notification_light_settings.xml
++++ b/res/xml/notification_light_settings.xml
+@@ -24,7 +24,8 @@
+ 
+         <lineageos.preference.SystemSettingSwitchPreference
+             android:key="notification_light_pulse"
+-            android:title="@string/notification_light_title" />
++            android:title="@string/notification_light_title"
++            android:defaultValue="true" />
+ 
+         <lineageos.preference.LineageSystemSettingSwitchPreference
+             android:key="notification_light_color_auto"
+diff --git a/src/org/lineageos/lineageparts/notificationlight/ApplicationLightPreference.java b/src/org/lineageos/lineageparts/notificationlight/ApplicationLightPreference.java
+index 0e7f43e..b6172bd 100644
+--- a/src/org/lineageos/lineageparts/notificationlight/ApplicationLightPreference.java
++++ b/src/org/lineageos/lineageparts/notificationlight/ApplicationLightPreference.java
+@@ -38,7 +38,7 @@ public class ApplicationLightPreference extends CustomDialogPreference<LightSett
+         implements View.OnLongClickListener {
+ 
+     private static String TAG = "AppLightPreference";
+-    public static final int DEFAULT_TIME = 1000;
++    public static final int DEFAULT_TIME = 800;
+     public static final int DEFAULT_COLOR = 0xffffff;
+ 
+     private ImageView mLightColorView;
+-- 
+2.7.4
+

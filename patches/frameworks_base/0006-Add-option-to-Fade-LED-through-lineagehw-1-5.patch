@@ -1,0 +1,80 @@
+From d1df5463835b8fa1a076ff574df669b6bd3387c5 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Mon, 14 May 2018 09:19:45 +0400
+Subject: [PATCH 06/18] Add option to Fade LED through lineagehw [1/5]
+
+Change-Id: I2a736c6f238c8b266c3039bfa989f6c36db6ec7b
+---
+ .../android/server/InputMethodManagerService.java   | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/services/core/java/com/android/server/InputMethodManagerService.java b/services/core/java/com/android/server/InputMethodManagerService.java
+index a9fa100..eade035 100644
+--- a/services/core/java/com/android/server/InputMethodManagerService.java
++++ b/services/core/java/com/android/server/InputMethodManagerService.java
+@@ -786,6 +786,12 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
+             resolver.registerContentObserver(Settings.Secure.getUriFor(
+                     Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE), false, this, userId);
+             if (mLineageHardware.isSupported(
++                    LineageHardwareManager.FEATURE_FADE_LED_NOTIFICATION)) {
++                resolver.registerContentObserver(LineageSettings.System.getUriFor(
++                        LineageSettings.System.FADE_LED_NOTIFICATION_ENABLE),
++                        false, this, userId);
++            }
++            if (mLineageHardware.isSupported(
+                     LineageHardwareManager.FEATURE_HIGH_TOUCH_SENSITIVITY)) {
+                 resolver.registerContentObserver(LineageSettings.System.getUriFor(
+                         LineageSettings.System.HIGH_TOUCH_SENSITIVITY_ENABLE),
+@@ -811,6 +817,8 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
+                     Settings.Secure.SHOW_IME_WITH_HARD_KEYBOARD);
+             final Uri accessibilityRequestingNoImeUri = Settings.Secure.getUriFor(
+                     Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE);
++            final Uri fadeLedNotificationUri = LineageSettings.System.getUriFor(
++                    LineageSettings.System.FADE_LED_NOTIFICATION_ENABLE);
+             final Uri touchSensitivityUri = LineageSettings.System.getUriFor(
+                     LineageSettings.System.HIGH_TOUCH_SENSITIVITY_ENABLE);
+             final Uri touchHoveringUri = LineageSettings.Secure.getUriFor(
+@@ -830,6 +838,8 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
+                     } else if (mShowRequested) {
+                         showCurrentInputLocked(InputMethodManager.SHOW_IMPLICIT, null);
+                     }
++                } else if (fadeLedNotificationUri.equals(uri)) {
++                    updateFadeLedNotification();
+                 } else if (touchSensitivityUri.equals(uri)) {
+                     updateTouchSensitivity();
+                 } else if (touchHoveringUri.equals(uri)) {
+@@ -1442,6 +1452,7 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
+ 
+         updateTouchHovering();
+         updateTouchSensitivity();
++        updateFadeLedNotification();
+ 
+         if (DEBUG) Slog.d(TAG, "Switching user stage 3/3. newUserId=" + newUserId
+                 + " selectedIme=" + mSettings.getSelectedInputMethod());
+@@ -1484,6 +1495,7 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
+ 
+                 updateTouchHovering();
+                 updateTouchSensitivity();
++                updateFadeLedNotification();
+ 
+                 mKeyguardManager = mContext.getSystemService(KeyguardManager.class);
+                 mNotificationManager = mContext.getSystemService(NotificationManager.class);
+@@ -2427,6 +2439,15 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
+ 
+     }
+ 
++    private void updateFadeLedNotification() {
++        if (!mLineageHardware.isSupported(LineageHardwareManager.FEATURE_FADE_LED_NOTIFICATION)) {
++            return;
++        }
++        final boolean enabled = LineageSettings.System.getInt(mContext.getContentResolver(),
++                LineageSettings.System.FADE_LED_NOTIFICATION_ENABLE, 0) == 1;
++        mLineageHardware.set(LineageHardwareManager.FEATURE_FADE_LED_NOTIFICATION, enabled);
++    }
++
+     private void updateTouchSensitivity() {
+         if (!mLineageHardware.isSupported(LineageHardwareManager.FEATURE_HIGH_TOUCH_SENSITIVITY)) {
+             return;
+-- 
+2.7.4
+

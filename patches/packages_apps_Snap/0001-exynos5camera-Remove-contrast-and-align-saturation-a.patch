@@ -1,0 +1,262 @@
+From d536dec200c40c8fc38a3f7efa4e8e142fbce34a Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Mon, 14 May 2018 16:34:38 +0400
+Subject: [PATCH 01/14] exynos5camera: Remove contrast and align saturation and
+ sharpness with exynoscamera
+
+Change-Id: Ifa22b6f549e4e9682b9f967f0487fa920a79dff9
+---
+ res/values/qcomarrays.xml                  | 30 +++----------------
+ res/values/qcomstrings.xml                 | 48 +++++++++++-------------------
+ src/com/android/camera/CameraSettings.java | 13 ++++++--
+ src/com/android/camera/PhotoMenu.java      |  1 -
+ src/com/android/camera/PhotoModule.java    | 20 ++++++++-----
+ 5 files changed, 44 insertions(+), 68 deletions(-)
+
+diff --git a/res/values/qcomarrays.xml b/res/values/qcomarrays.xml
+index 0e5ffdb..1077357 100755
+--- a/res/values/qcomarrays.xml
++++ b/res/values/qcomarrays.xml
+@@ -317,8 +317,6 @@
+         <item>@string/pref_camera_sharpness_entry_level2</item>
+         <item>@string/pref_camera_sharpness_entry_level3</item>
+         <item>@string/pref_camera_sharpness_entry_level4</item>
+-        <item>@string/pref_camera_sharpness_entry_level5</item>
+-        <item>@string/pref_camera_sharpness_entry_level6</item>
+     </string-array>
+ 
+     <!-- Camera Preferences MultiLevel dialog box entries -->
+@@ -328,12 +326,6 @@
+         <item>@string/pref_camera_contrast_entry_level2</item>
+         <item>@string/pref_camera_contrast_entry_level3</item>
+         <item>@string/pref_camera_contrast_entry_level4</item>
+-        <item>@string/pref_camera_contrast_entry_level5</item>
+-        <item>@string/pref_camera_contrast_entry_level6</item>
+-        <item>@string/pref_camera_contrast_entry_level7</item>
+-        <item>@string/pref_camera_contrast_entry_level8</item>
+-        <item>@string/pref_camera_contrast_entry_level9</item>
+-        <item>@string/pref_camera_contrast_entry_level10</item>
+     </string-array>
+ 
+     <!-- Camera Preferences Saturation dialog box entries -->
+@@ -343,38 +335,24 @@
+         <item>@string/pref_camera_saturation_entry_level2</item>
+         <item>@string/pref_camera_saturation_entry_level3</item>
+         <item>@string/pref_camera_saturation_entry_level4</item>
+-        <item>@string/pref_camera_saturation_entry_level5</item>
+-        <item>@string/pref_camera_saturation_entry_level6</item>
+-        <item>@string/pref_camera_saturation_entry_level7</item>
+-        <item>@string/pref_camera_saturation_entry_level8</item>
+-        <item>@string/pref_camera_saturation_entry_level9</item>
+-        <item>@string/pref_camera_saturation_entry_level10</item>
+     </string-array>
+ 
+     <!-- Entry Valur array for sharpness -->
+     <string-array name="pref_camera_multilevel_sharpness_entryvalues">
++        <item>-2</item>
++        <item>-1</item>
+         <item>0</item>
+         <item>1</item>
+         <item>2</item>
+-        <item>3</item>
+-        <item>4</item>
+-        <item>5</item>
+-        <item>6</item>
+     </string-array>
+ 
+     <!-- Entry values array is shared between Saturation & Contrast -->
+     <string-array name="pref_camera_multilevel_entryvalues">
++        <item>-2</item>
++        <item>-1</item>
+         <item>0</item>
+         <item>1</item>
+         <item>2</item>
+-        <item>3</item>
+-        <item>4</item>
+-        <item>5</item>
+-        <item>6</item>
+-        <item>7</item>
+-        <item>8</item>
+-        <item>9</item>
+-        <item>10</item>
+     </string-array>
+ 
+     <!-- Camera Preferences ISO dialog box entries -->
+diff --git a/res/values/qcomstrings.xml b/res/values/qcomstrings.xml
+index 8f64a05..617ad47 100755
+--- a/res/values/qcomstrings.xml
++++ b/res/values/qcomstrings.xml
+@@ -564,42 +564,28 @@
+     <string name="pref_camera_facerc_entry_on">On</string>
+ 
+     <!-- Settings screen, Multiple levels entries -->
+-    <string name="pref_camera_sharpness_entry_level0">Level 0</string>
+-    <string name="pref_camera_sharpness_entry_level1">Level 1</string>
+-    <string name="pref_camera_sharpness_entry_level2">Level 2 (default)</string>
+-    <string name="pref_camera_sharpness_entry_level3">Level 3</string>
+-    <string name="pref_camera_sharpness_entry_level4">Level 4</string>
+-    <string name="pref_camera_sharpness_entry_level5">Level 5</string>
+-    <string name="pref_camera_sharpness_entry_level6">Level 6</string>
++    <string name="pref_camera_sharpness_entry_level0">-2</string>
++    <string name="pref_camera_sharpness_entry_level1">-1</string>
++    <string name="pref_camera_sharpness_entry_level2">0</string>
++    <string name="pref_camera_sharpness_entry_level3">+1</string>
++    <string name="pref_camera_sharpness_entry_level4">+2</string>
+ 
+     <!-- Settings screen, Multiple levels entries -->
+-    <string name="pref_camera_contrast_entry_level0">Level 0</string>
+-    <string name="pref_camera_contrast_entry_level1">Level 1</string>
+-    <string name="pref_camera_contrast_entry_level2">Level 2</string>
+-    <string name="pref_camera_contrast_entry_level3">Level 3</string>
+-    <string name="pref_camera_contrast_entry_level4">Level 4</string>
+-    <string name="pref_camera_contrast_entry_level5">Level 5 (default)</string>
+-    <string name="pref_camera_contrast_entry_level6">Level 6</string>
+-    <string name="pref_camera_contrast_entry_level7">Level 7</string>
+-    <string name="pref_camera_contrast_entry_level8">Level 8</string>
+-    <string name="pref_camera_contrast_entry_level9">Level 9</string>
+-    <string name="pref_camera_contrast_entry_level10">Level 10</string>
++    <string name="pref_camera_contrast_entry_level0">-2</string>
++    <string name="pref_camera_contrast_entry_level1">-1</string>
++    <string name="pref_camera_contrast_entry_level2">0</string>
++    <string name="pref_camera_contrast_entry_level3">+1</string>
++    <string name="pref_camera_contrast_entry_level4">+2</string>
+ 
+     <!-- Settings screen, Multiple levels entries -->
+-    <string name="pref_camera_saturation_entry_level0">Level 0</string>
+-    <string name="pref_camera_saturation_entry_level1">Level 1</string>
+-    <string name="pref_camera_saturation_entry_level2">Level 2</string>
+-    <string name="pref_camera_saturation_entry_level3">Level 3</string>
+-    <string name="pref_camera_saturation_entry_level4">Level 4</string>
+-    <string name="pref_camera_saturation_entry_level5">Level 5 (default)</string>
+-    <string name="pref_camera_saturation_entry_level6">Level 6</string>
+-    <string name="pref_camera_saturation_entry_level7">Level 7</string>
+-    <string name="pref_camera_saturation_entry_level8">Level 8</string>
+-    <string name="pref_camera_saturation_entry_level9">Level 9</string>
+-    <string name="pref_camera_saturation_entry_level10">Level 10</string>
++    <string name="pref_camera_saturation_entry_level0">-2</string>
++    <string name="pref_camera_saturation_entry_level1">-1</string>
++    <string name="pref_camera_saturation_entry_level2">0</string>
++    <string name="pref_camera_saturation_entry_level3">+1</string>
++    <string name="pref_camera_saturation_entry_level4">+2</string>
+ 
+     <!-- Default sharpness setting. Do not translate. -->
+-    <string name="pref_camera_sharpness_default" translatable="false">2</string>
++    <string name="pref_camera_sharpness_default" translatable="false">0</string>
+ 
+     <!-- Settings screen, Select sharpness title -->
+     <string name="pref_camera_sharpness_title">Sharpness</string>
+@@ -611,7 +597,7 @@
+     <string name="pref_camera_contrast_title">Contrast</string>
+ 
+     <!-- Default saturation setting. Do not translate. -->
+-    <string name="pref_camera_saturation_default" translatable="false">5</string>
++    <string name="pref_camera_saturation_default" translatable="false">0</string>
+ 
+     <!-- Settings screen, Select saturation title -->
+     <string name="pref_camera_saturation_title">Saturation</string>
+diff --git a/src/com/android/camera/CameraSettings.java b/src/com/android/camera/CameraSettings.java
+index 210e110..0ec6960 100644
+--- a/src/com/android/camera/CameraSettings.java
++++ b/src/com/android/camera/CameraSettings.java
+@@ -189,6 +189,13 @@ public class CameraSettings {
+     public static final String KEY_QC_INSTANT_CAPTURE = "instant-capture";
+     public static final String KEY_QC_INSTANT_CAPTURE_VALUES = "instant-capture-values";
+ 
++    public static final String KEY_CURRENT_SATURATION = "saturation";
++    public static final String KEY_MIN_SATURATION = "saturation-min";
++    public static final String KEY_MAX_SATURATION = "saturation-max";
++    public static final String KEY_CURRENT_SHARPNESS = "sharpness";
++    public static final String KEY_MIN_SHARPNESS = "sharpness-min";
++    public static final String KEY_MAX_SHARPNESS = "sharpness-max";
++
+     public static final String KEY_LUMINANCE_CONITION = "luminance-condition";
+     public static final String LUMINANCE_CONITION_LOW = "low";
+     public static final String LUMINANCE_CONITION_HIGH = "high";
+@@ -901,7 +908,8 @@ public class CameraSettings {
+         }
+ 
+         if (saturation != null && !CameraUtil.isSupported(mParameters, "saturation") &&
+-                !CameraUtil.isSupported(mParameters, "max-saturation")) {
++                !CameraUtil.isSupported(mParameters, KEY_MIN_SATURATION) &&
++                !CameraUtil.isSupported(mParameters, KEY_MAX_SATURATION)) {
+             removePreference(group, saturation.getKey());
+         }
+ 
+@@ -911,7 +919,8 @@ public class CameraSettings {
+         }
+ 
+         if (sharpness != null && !CameraUtil.isSupported(mParameters, "sharpness") &&
+-                !CameraUtil.isSupported(mParameters, "max-sharpness")) {
++                !CameraUtil.isSupported(mParameters, KEY_MIN_SHARPNESS) &&
++                !CameraUtil.isSupported(mParameters, KEY_MAX_SHARPNESS)) {
+             removePreference(group, sharpness.getKey());
+         }
+ 
+diff --git a/src/com/android/camera/PhotoMenu.java b/src/com/android/camera/PhotoMenu.java
+index 6637e05..7c88a4f 100644
+--- a/src/com/android/camera/PhotoMenu.java
++++ b/src/com/android/camera/PhotoMenu.java
+@@ -206,7 +206,6 @@ public class PhotoMenu extends MenuController
+                 CameraSettings.KEY_POWER_SHUTTER,
+                 CameraSettings.KEY_MAX_BRIGHTNESS,
+                 CameraSettings.KEY_SATURATION,
+-                CameraSettings.KEY_CONTRAST,
+                 CameraSettings.KEY_SHARPNESS,
+                 CameraSettings.KEY_AUTOEXPOSURE,
+                 CameraSettings.KEY_ANTIBANDING,
+diff --git a/src/com/android/camera/PhotoModule.java b/src/com/android/camera/PhotoModule.java
+index 291b95c..eb20be7 100644
+--- a/src/com/android/camera/PhotoModule.java
++++ b/src/com/android/camera/PhotoModule.java
+@@ -3392,7 +3392,8 @@ public class PhotoModule
+     private String getSaturationSafe() {
+         String ret = null;
+         if (CameraUtil.isSupported(mParameters, "saturation") &&
+-                CameraUtil.isSupported(mParameters, "max-saturation")) {
++                CameraUtil.isSupported(mParameters, "saturation-min") &&
++                CameraUtil.isSupported(mParameters, "saturation-max")) {
+             ret = mPreferences.getString(
+                     CameraSettings.KEY_SATURATION,
+                     mActivity.getString(R.string.pref_camera_saturation_default));
+@@ -3414,7 +3415,8 @@ public class PhotoModule
+     private String getSharpnessSafe() {
+         String ret = null;
+         if (CameraUtil.isSupported(mParameters, "sharpness") &&
+-                CameraUtil.isSupported(mParameters, "max-sharpness")) {
++                CameraUtil.isSupported(mParameters, "sharpness-min") &&
++                CameraUtil.isSupported(mParameters, "sharpness-max")) {
+             ret = mPreferences.getString(
+                     CameraSettings.KEY_SHARPNESS,
+                     mActivity.getString(R.string.pref_camera_sharpness_default));
+@@ -3535,8 +3537,9 @@ public class PhotoModule
+         if (saturationStr != null) {
+             int saturation = Integer.parseInt(saturationStr);
+             Log.v(TAG, "Saturation value =" + saturation);
+-            if((0 <= saturation) && (saturation <= ParametersWrapper.getMaxSaturation(mParameters))){
+-                ParametersWrapper.setSaturation(mParameters, saturation);
++            if((saturation >= mParameters.getInt(CameraSettings.KEY_MIN_SATURATION))
++                    && (saturation <= mParameters.getInt(CameraSettings.KEY_MAX_SATURATION))){
++                mParameters.set(CameraSettings.KEY_CURRENT_SATURATION, saturationStr);
+             }
+         }
+         // Set contrast parameter.
+@@ -3551,11 +3554,12 @@ public class PhotoModule
+         // Set sharpness parameter
+         String sharpnessStr = getSharpnessSafe();
+         if (sharpnessStr != null) {
+-            int sharpness = Integer.parseInt(sharpnessStr) *
+-                    (ParametersWrapper.getMaxSharpness(mParameters)/MAX_SHARPNESS_LEVEL);
++            int sharpness = Integer.parseInt(sharpnessStr);
+             Log.v(TAG, "Sharpness value =" + sharpness);
+-            if((0 <= sharpness) && (sharpness <= ParametersWrapper.getMaxSharpness(mParameters))){
+-                ParametersWrapper.setSharpness(mParameters, sharpness);
++            if((sharpness >= mParameters.getInt(CameraSettings.KEY_MIN_SHARPNESS))
++                    && (sharpness <= mParameters.getInt(CameraSettings.KEY_MAX_SHARPNESS))){
++                mParameters.set(CameraSettings.KEY_CURRENT_SHARPNESS, sharpness);
++
+             }
+         }
+         // Set Face Recognition
+-- 
+2.7.4
+

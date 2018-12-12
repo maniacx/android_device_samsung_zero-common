@@ -1,0 +1,83 @@
+From aeb56126d88007f3ae646c4c993b37591112c8e9 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Wed, 28 Mar 2018 22:41:46 +0400
+Subject: [PATCH 2/3] Merge some legacy function from lineage interface to fix
+ our camera
+
+Change-Id: If45b7be98674eeeff39557cd91f5db7f51cb713e
+---
+ camera/device/1.0/default/CameraDevice.cpp | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/camera/device/1.0/default/CameraDevice.cpp b/camera/device/1.0/default/CameraDevice.cpp
+index 116963b..e097ade 100644
+--- a/camera/device/1.0/default/CameraDevice.cpp
++++ b/camera/device/1.0/default/CameraDevice.cpp
+@@ -36,6 +36,8 @@ using ::android::hardware::graphics::common::V1_0::PixelFormat;
+ 
+ HandleImporter CameraDevice::sHandleImporter;
+ 
++static CameraDevice *sCameraDevice;
++
+ Status CameraDevice::getHidlStatus(const int& status) {
+     switch (status) {
+         case 0: return Status::OK;
+@@ -359,9 +361,10 @@ CameraDevice::CameraHeapMemory::~CameraHeapMemory() {
+ }
+ 
+ // shared memory methods
+-camera_memory_t* CameraDevice::sGetMemory(int fd, size_t buf_size, uint_t num_bufs, void *user) {
++camera_memory_t* CameraDevice::sGetMemory(int fd, size_t buf_size, uint_t num_bufs,
++        void *user __unused) {
+     ALOGV("%s", __FUNCTION__);
+-    CameraDevice* object = static_cast<CameraDevice*>(user);
++    CameraDevice* object = sCameraDevice;
+     if (object->mDeviceCallback == nullptr) {
+         ALOGE("%s: camera HAL request memory while camera is not opened!", __FUNCTION__);
+         return nullptr;
+@@ -410,18 +413,18 @@ void CameraDevice::sPutMemory(camera_memory_t *data) {
+ }
+ 
+ // Callback forwarding methods
+-void CameraDevice::sNotifyCb(int32_t msg_type, int32_t ext1, int32_t ext2, void *user) {
++void CameraDevice::sNotifyCb(int32_t msg_type, int32_t ext1, int32_t ext2, void *user __unused) {
+     ALOGV("%s", __FUNCTION__);
+-    CameraDevice* object = static_cast<CameraDevice*>(user);
++    CameraDevice* object = sCameraDevice;
+     if (object->mDeviceCallback != nullptr) {
+         object->mDeviceCallback->notifyCallback((NotifyCallbackMsg) msg_type, ext1, ext2);
+     }
+ }
+ 
+ void CameraDevice::sDataCb(int32_t msg_type, const camera_memory_t *data, unsigned int index,
+-        camera_frame_metadata_t *metadata, void *user) {
++        camera_frame_metadata_t *metadata, void *user __unused) {
+     ALOGV("%s", __FUNCTION__);
+-    CameraDevice* object = static_cast<CameraDevice*>(user);
++    CameraDevice* object = sCameraDevice;
+     sp<CameraHeapMemory> mem(static_cast<CameraHeapMemory*>(data->handle));
+     if (index >= mem->mNumBufs) {
+         ALOGE("%s: invalid buffer index %d, max allowed is %d", __FUNCTION__,
+@@ -531,9 +534,9 @@ void CameraDevice::handleCallbackTimestamp(
+ }
+ 
+ void CameraDevice::sDataCbTimestamp(nsecs_t timestamp, int32_t msg_type,
+-        const camera_memory_t *data, unsigned index, void *user) {
++        const camera_memory_t *data, unsigned index, void *user __unused) {
+     ALOGV("%s", __FUNCTION__);
+-    CameraDevice* object = static_cast<CameraDevice*>(user);
++    CameraDevice* object = sCameraDevice;
+     // Start refcounting the heap object from here on.  When the clients
+     // drop all references, it will be destroyed (as well as the enclosed
+     // MemoryHeapBase.
+@@ -709,6 +712,7 @@ Return<Status> CameraDevice::open(const sp<ICameraDeviceCallback>& callback) {
+ 
+     initHalPreviewWindow();
+     mDeviceCallback = callback;
++    sCameraDevice = this;
+ #ifdef QTI_CAMERA_DEVICE
+     mQDeviceCallback = vendor::qti::hardware::camera::device::V1_0::IQCameraDeviceCallback::castFrom(callback);
+     if(mQDeviceCallback == nullptr) {
+-- 
+2.7.4
+

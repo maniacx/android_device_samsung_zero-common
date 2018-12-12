@@ -1,0 +1,168 @@
+From bd76d13022ed3b6fa9a4671e826747e06e0e552d Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Wed, 28 Mar 2018 08:02:17 +0400
+Subject: [PATCH] Add option to Fade LED through lineagehw [4/5]
+
+---
+ api/lineage_current.txt                                     |  1 +
+ host/migration/src/LineageSettings.java                     |  8 ++++++++
+ .../lineageos/platform/internal/LineageHardwareService.java |  7 +++++++
+ sdk/src/java/lineageos/hardware/LineageHardwareManager.java |  7 +++++++
+ sdk/src/java/lineageos/providers/LineageSettings.java       | 13 +++++++++++++
+ .../org/lineageos/tests/hardware/LineageHardwareTest.java   |  3 +++
+ 6 files changed, 39 insertions(+)
+
+diff --git a/api/lineage_current.txt b/api/lineage_current.txt
+index 340a77f..dc41ffc 100644
+--- a/api/lineage_current.txt
++++ b/api/lineage_current.txt
+@@ -223,6 +223,7 @@ package lineageos.hardware {
+     field public static final int FEATURE_DISPLAY_COLOR_CALIBRATION = 4; // 0x4
+     field public static final int FEATURE_DISPLAY_GAMMA_CALIBRATION = 8; // 0x8
+     field public static final int FEATURE_DISPLAY_MODES = 8192; // 0x2000
++    field public static final int FEATURE_FADE_LED_NOTIFICATION = 1048576; // 0x100000
+     field public static final int FEATURE_HIGH_TOUCH_SENSITIVITY = 16; // 0x10
+     field public static final int FEATURE_KEY_DISABLE = 32; // 0x20
+     field public static final int FEATURE_LONG_TERM_ORBITS = 64; // 0x40
+diff --git a/host/migration/src/LineageSettings.java b/host/migration/src/LineageSettings.java
+index 0005fb3..a58c448 100644
+--- a/host/migration/src/LineageSettings.java
++++ b/host/migration/src/LineageSettings.java
+@@ -44,6 +44,14 @@ public final class LineageSettings {
+         public static final String NOTIFICATION_PLAY_QUEUE = "notification_play_queue";
+ 
+         /**
++         * Whether the FadeLedNotification is activated or not.
++         * 0 = off, 1 = on
++         * @hide
++         */
++        public static final String FADE_LED_NOTIFICATION_ENABLE =
++                "fade_led_notification_enable";
++
++        /**
+          * Whether the HighTouchSensitivity is activated or not.
+          * 0 = off, 1 = on
+          * @hide
+diff --git a/lineage/lib/main/java/org/lineageos/platform/internal/LineageHardwareService.java b/lineage/lib/main/java/org/lineageos/platform/internal/LineageHardwareService.java
+index 9d55748..2cf44f0 100644
+--- a/lineage/lib/main/java/org/lineageos/platform/internal/LineageHardwareService.java
++++ b/lineage/lib/main/java/org/lineageos/platform/internal/LineageHardwareService.java
+@@ -47,6 +47,7 @@ import org.lineageos.hardware.ColorEnhancement;
+ import org.lineageos.hardware.DisplayColorCalibration;
+ import org.lineageos.hardware.DisplayGammaCalibration;
+ import org.lineageos.hardware.DisplayModeControl;
++import org.lineageos.hardware.FadeLedNotification;
+ import org.lineageos.hardware.HighTouchSensitivity;
+ import org.lineageos.hardware.KeyDisabler;
+ import org.lineageos.hardware.LongTermOrbits;
+@@ -127,6 +128,8 @@ public class LineageHardwareService extends LineageSystemService {
+                 mSupportedFeatures |= LineageHardwareManager.FEATURE_DISPLAY_COLOR_CALIBRATION;
+             if (DisplayGammaCalibration.isSupported())
+                 mSupportedFeatures |= LineageHardwareManager.FEATURE_DISPLAY_GAMMA_CALIBRATION;
++            if (FadeLedNotification.isSupported())
++                mSupportedFeatures |= LineageHardwareManager.FEATURE_FADE_LED_NOTIFICATION;
+             if (HighTouchSensitivity.isSupported())
+                 mSupportedFeatures |= LineageHardwareManager.FEATURE_HIGH_TOUCH_SENSITIVITY;
+             if (KeyDisabler.isSupported())
+@@ -167,6 +170,8 @@ public class LineageHardwareService extends LineageSystemService {
+                     return AutoContrast.isEnabled();
+                 case LineageHardwareManager.FEATURE_COLOR_ENHANCEMENT:
+                     return ColorEnhancement.isEnabled();
++               case LineageHardwareManager.FEATURE_FADE_LED_NOTIFICATION:
++                    return FadeLedNotification.isEnabled();
+                 case LineageHardwareManager.FEATURE_HIGH_TOUCH_SENSITIVITY:
+                     return HighTouchSensitivity.isEnabled();
+                 case LineageHardwareManager.FEATURE_KEY_DISABLE:
+@@ -191,6 +196,8 @@ public class LineageHardwareService extends LineageSystemService {
+                     return AutoContrast.setEnabled(enable);
+                 case LineageHardwareManager.FEATURE_COLOR_ENHANCEMENT:
+                     return ColorEnhancement.setEnabled(enable);
++                case LineageHardwareManager.FEATURE_FADE_LED_NOTIFICATION:
++                    return FadeLedNotification.setEnabled(enable);
+                 case LineageHardwareManager.FEATURE_HIGH_TOUCH_SENSITIVITY:
+                     return HighTouchSensitivity.setEnabled(enable);
+                 case LineageHardwareManager.FEATURE_KEY_DISABLE:
+diff --git a/sdk/src/java/lineageos/hardware/LineageHardwareManager.java b/sdk/src/java/lineageos/hardware/LineageHardwareManager.java
+index 4b625df..e53dcf1 100644
+--- a/sdk/src/java/lineageos/hardware/LineageHardwareManager.java
++++ b/sdk/src/java/lineageos/hardware/LineageHardwareManager.java
+@@ -158,10 +158,17 @@ public final class LineageHardwareManager {
+     @VisibleForTesting
+     public static final int FEATURE_TOUCHSCREEN_GESTURES = 0x80000;
+ 
++    /**
++     * Fade Led notification for touch panels
++     */
++    @VisibleForTesting
++    public static final int FEATURE_FADE_LED_NOTIFICATION = 0x100000;
++
+     private static final List<Integer> BOOLEAN_FEATURES = Arrays.asList(
+         FEATURE_ADAPTIVE_BACKLIGHT,
+         FEATURE_AUTO_CONTRAST,
+         FEATURE_COLOR_ENHANCEMENT,
++        FEATURE_FADE_LED_NOTIFICATION,
+         FEATURE_HIGH_TOUCH_SENSITIVITY,
+         FEATURE_KEY_DISABLE,
+         FEATURE_SUNLIGHT_ENHANCEMENT,
+diff --git a/sdk/src/java/lineageos/providers/LineageSettings.java b/sdk/src/java/lineageos/providers/LineageSettings.java
+index c917b1b..45a4bbe 100644
+--- a/sdk/src/java/lineageos/providers/LineageSettings.java
++++ b/sdk/src/java/lineageos/providers/LineageSettings.java
+@@ -833,6 +833,17 @@ public final class LineageSettings {
+         public static final Validator NOTIFICATION_PLAY_QUEUE_VALIDATOR = sBooleanValidator;
+ 
+         /**
++         * Whether the FadeLedNotification is activated or not.
++         * 0 = off, 1 = on
++         */
++        public static final String FADE_LED_NOTIFICATION_ENABLE =
++                "fade_led_notification_enable";
++
++        /** @hide */
++        public static final Validator FADE_LED_NOTIFICATION_ENABLE_VALIDATOR =
++                sBooleanValidator;
++
++        /**
+          * Whether the HighTouchSensitivity is activated or not.
+          * 0 = off, 1 = on
+          */
+@@ -2194,6 +2205,8 @@ public final class LineageSettings {
+                 new ArrayMap<String, Validator>();
+         static {
+             VALIDATORS.put(NOTIFICATION_PLAY_QUEUE, NOTIFICATION_PLAY_QUEUE_VALIDATOR);
++            VALIDATORS.put(FADE_LED_NOTIFICATION_ENABLE,
++                    FADE_LED_NOTIFICATION_ENABLE_VALIDATOR);
+             VALIDATORS.put(HIGH_TOUCH_SENSITIVITY_ENABLE,
+                     HIGH_TOUCH_SENSITIVITY_ENABLE_VALIDATOR);
+             VALIDATORS.put(FULL_SCREEN_ASPECT_RATIO, FULL_SCREEN_ASPECT_RATIO_VALIDATOR);
+diff --git a/tests/src/org/lineageos/tests/hardware/LineageHardwareTest.java b/tests/src/org/lineageos/tests/hardware/LineageHardwareTest.java
+index 6d24747..21c9434 100644
+--- a/tests/src/org/lineageos/tests/hardware/LineageHardwareTest.java
++++ b/tests/src/org/lineageos/tests/hardware/LineageHardwareTest.java
+@@ -39,6 +39,7 @@ public class LineageHardwareTest extends TestActivity {
+             LineageHardwareManager.FEATURE_COLOR_ENHANCEMENT,
+             LineageHardwareManager.FEATURE_DISPLAY_COLOR_CALIBRATION,
+             LineageHardwareManager.FEATURE_DISPLAY_GAMMA_CALIBRATION,
++            LineageHardwareManager.FEATURE_FADE_LED_NOTIFICATION,
+             LineageHardwareManager.FEATURE_HIGH_TOUCH_SENSITIVITY,
+             LineageHardwareManager.FEATURE_KEY_DISABLE,
+             LineageHardwareManager.FEATURE_LONG_TERM_ORBITS,
+@@ -55,6 +56,7 @@ public class LineageHardwareTest extends TestActivity {
+             "FEATURE_COLOR_ENHANCEMENT",
+             "FEATURE_DISPLAY_COLOR_CALIBRATION",
+             "FEATURE_DISPLAY_GAMMA_CALIBRATION",
++            "FEATURE_FADE_LED_NOTIFICATION",
+             "FEATURE_HIGH_TOUCH_SENSITIVITY",
+             "FEATURE_KEY_DISABLE",
+             "FEATURE_LONG_TERM_ORBITS",
+@@ -69,6 +71,7 @@ public class LineageHardwareTest extends TestActivity {
+     private static final List<Integer> BOOLEAN_FEATURES = Arrays.asList(
+             LineageHardwareManager.FEATURE_ADAPTIVE_BACKLIGHT,
+             LineageHardwareManager.FEATURE_COLOR_ENHANCEMENT,
++            LineageHardwareManager.FEATURE_FADE_LED_NOTIFICATION,
+             LineageHardwareManager.FEATURE_HIGH_TOUCH_SENSITIVITY,
+             LineageHardwareManager.FEATURE_KEY_DISABLE,
+             LineageHardwareManager.FEATURE_SUNLIGHT_ENHANCEMENT,
+-- 
+2.7.4
+

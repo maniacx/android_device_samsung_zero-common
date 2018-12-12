@@ -1,0 +1,64 @@
+From ad07527b2a2b4179ee2910178cd0eafe4a530c54 Mon Sep 17 00:00:00 2001
+From: Lukas0610 <mail@lukasberger.at>
+Date: Thu, 7 Jun 2018 19:44:24 +0200
+Subject: [PATCH 2/2] SurfaceFlinger_hwc1: fix state recognition of color
+ calibration matrix
+
+Previously, the state of the color calibration matrix was decided by the framework which sent an integer to determine it (non-zero: enable, zero: disabled).
+
+This caused the flinger to wrongly keep the matrix enabled (and the HWC disabled) even though the user disabled the color calibration utility.
+
+Correct this by also checking the actual sum the the matrix, with 4 being corresponding value for rgb(255, 255, 255), meaning color calibration is disabled.
+
+Change-Id: I9aaad98c2e89f8e9d464b5e77982408593157109
+---
+ services/surfaceflinger/SurfaceFlinger_hwc1.cpp | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/services/surfaceflinger/SurfaceFlinger_hwc1.cpp b/services/surfaceflinger/SurfaceFlinger_hwc1.cpp
+index 0486194..dcec89b 100644
+--- a/services/surfaceflinger/SurfaceFlinger_hwc1.cpp
++++ b/services/surfaceflinger/SurfaceFlinger_hwc1.cpp
+@@ -3360,6 +3360,10 @@ void SurfaceFlinger::dumpAllLocked(const Vector<String16>& args, size_t& index,
+             hwc.initCheck()==NO_ERROR ? "present" : "not present",
+                     (mDebugDisableHWC || mDebugRegion || mDaltonize
+                             || mHasColorMatrix) ? "disabled" : "enabled");
++    result.appendFormat("    mDebugDisableHWC=%d\n", mDebugDisableHWC);
++    result.appendFormat("    mDebugRegion=%d\n", mDebugRegion);
++    result.appendFormat("    mDaltonize=%d\n", mDaltonize);
++    result.appendFormat("    mHasColorMatrix=%d\n", mHasColorMatrix);
+     hwc.dump(result);
+ 
+     /*
+@@ -3543,6 +3547,8 @@ status_t SurfaceFlinger::onTransact(
+                 return NO_ERROR;
+             }
+             case 1015: {
++                float sum = 0.0F;
++
+                 // apply a color matrix
+                 n = data.readInt32();
+                 mHasColorMatrix = n ? 1 : 0;
+@@ -3553,11 +3559,18 @@ status_t SurfaceFlinger::onTransact(
+                     for (size_t i = 0 ; i < 4; i++) {
+                       for (size_t j = 0; j < 4; j++) {
+                           mColorMatrix[i][j] = data.readFloat();
++                          sum += mColorMatrix[i][j];
+                       }
+                     }
+-                } else {
++                }
++
++                // sum of matrix equals to 4 if the color calibration is deactivated
++                // framework still send a full matrix, resulting in a disabled HWC.
++                if (!n || ((int)sum) == 4) {
+                     mColorMatrix = mat4();
++                    mHasColorMatrix = false;
+                 }
++
+                 invalidateHwcGeometry();
+                 repaintEverything();
+                 return NO_ERROR;
+-- 
+2.7.4
+

@@ -1,0 +1,640 @@
+From f55db1595134fed3c5fa5174f43614ecc48f8d71 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Mon, 11 Jun 2018 19:59:48 +0800
+Subject: [PATCH] add debugging info
+
+Change-Id: I0f65e726362ed70df49b6b3edb9b0aef0f6225f2
+---
+ src/bt_vendor_brcm.c |  24 ++++++++---
+ src/hardware.c       | 118 +++++++++++++++++++++++++++++++++++----------------
+ 2 files changed, 98 insertions(+), 44 deletions(-)
+
+diff --git a/src/bt_vendor_brcm.c b/src/bt_vendor_brcm.c
+index 0611427..0f6a5a7 100644
+--- a/src/bt_vendor_brcm.c
++++ b/src/bt_vendor_brcm.c
+@@ -24,7 +24,7 @@
+  *
+  ******************************************************************************/
+ 
+-#define LOG_TAG "bt_vendor"
++#define LOG_TAG "bt_vendor_bcrm"
+ 
+ #include <utils/Log.h>
+ #include <string.h>
+@@ -32,9 +32,7 @@
+ #include "upio.h"
+ #include "userial_vendor.h"
+ 
+-#ifndef BTVND_DBG
+-#define BTVND_DBG FALSE
+-#endif
++#define BTVND_DBG TRUE
+ 
+ #if (BTVND_DBG == TRUE)
+ #define BTVNDDBG(param, ...) {ALOGD(param, ## __VA_ARGS__);}
+@@ -99,7 +97,7 @@ static const tUSERIAL_CFG userial_init_cfg =
+ 
+ static int init(const bt_vendor_callbacks_t* p_cb, unsigned char *local_bdaddr)
+ {
+-    ALOGI("init");
++    ALOGI(" oooooo BT Vendor oooooo init");
+ 
+     if (p_cb == NULL)
+     {
+@@ -144,13 +142,14 @@ static int op(bt_vendor_opcode_t opcode, void *param)
+ {
+     int retval = 0;
+ 
+-    BTVNDDBG("op for %d", opcode);
++    ALOGI(" oooooo BT Vendor oooooo op for %d", opcode);
+ 
+     switch(opcode)
+     {
+         case BT_VND_OP_POWER_CTRL:
+ #ifndef BLUEDROID_ENABLE_V4L2
+             {
++                ALOGI(" oooooo BT Vendor oooooo BT_VND_OP_POWER_CTRL");
+                 int *state = (int *) param;
+                 upio_set_bluetooth_power(UPIO_BT_POWER_OFF);
+                 if (*state == BT_VND_PWR_ON)
+@@ -158,7 +157,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
+ #if (USE_AXI_BRIDGE_LOCK == TRUE)
+                     axi_bridge_lock(1);
+ #endif
+-                    ALOGW("NOTE: BT_VND_PWR_ON now forces power-off first");
++                    ALOGI(" oooooo BT Vendor oooooo NOTE: BT_VND_PWR_ON now forces power-off first");
+                     upio_set_bluetooth_power(UPIO_BT_POWER_ON);
+                 } else {
+                     /* Make sure wakelock is released */
+@@ -170,12 +169,14 @@ static int op(bt_vendor_opcode_t opcode, void *param)
+ 
+         case BT_VND_OP_FW_CFG:
+             {
++                ALOGI(" oooooo BT Vendor oooooo BT_VND_OP_FW_CFG");
+                 hw_config_start();
+             }
+             break;
+ 
+         case BT_VND_OP_SCO_CFG:
+             {
++                ALOGI(" oooooo BT Vendor oooooo BT_VND_OP_SCO_CFG");
+ #if (SCO_CFG_INCLUDED == TRUE)
+                 hw_sco_config();
+ #else
+@@ -186,6 +187,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
+ 
+         case BT_VND_OP_USERIAL_OPEN:
+             {
++                ALOGI(" oooooo BT Vendor oooooo BT_VND_OP_USERIAL_OPEN");
+                 int (*fd_array)[] = (int (*)[]) param;
+                 int fd, idx;
+                 fd = userial_vendor_open((tUSERIAL_CFG *) &userial_init_cfg);
+@@ -202,12 +204,14 @@ static int op(bt_vendor_opcode_t opcode, void *param)
+ 
+         case BT_VND_OP_USERIAL_CLOSE:
+             {
++                ALOGI(" oooooo BT Vendor oooooo BT_VND_OP_USERIAL_CLOSE");
+                 userial_vendor_close();
+             }
+             break;
+ 
+         case BT_VND_OP_GET_LPM_IDLE_TIMEOUT:
+             {
++//                ALOGI(" oooooo BT Vendor oooooo BT_VND_OP_GET_LPM_IDLE_TIMEOUT");
+                 uint32_t *timeout_ms = (uint32_t *) param;
+                 *timeout_ms = hw_lpm_get_idle_timeout();
+             }
+@@ -215,6 +219,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
+ 
+         case BT_VND_OP_LPM_SET_MODE:
+             {
++//                ALOGI(" oooooo BT Vendor oooooo BT_VND_OP_LPM_SET_MODE");
+                 uint8_t *mode = (uint8_t *) param;
+                 retval = hw_lpm_enable(*mode);
+             }
+@@ -222,6 +227,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
+ 
+         case BT_VND_OP_LPM_WAKE_SET_STATE:
+             {
++//                ALOGI(" oooooo BT Vendor oooooo BT_VND_OP_LPM_WAKE_SET_STATE");
+                 uint8_t *state = (uint8_t *) param;
+                 uint8_t wake_assert = (*state == BT_VND_LPM_WAKE_ASSERT) ? \
+                                         TRUE : FALSE;
+@@ -232,12 +238,14 @@ static int op(bt_vendor_opcode_t opcode, void *param)
+ 
+          case BT_VND_OP_SET_AUDIO_STATE:
+             {
++                ALOGI(" oooooo BT Vendor oooooo BT_VND_OP_SET_AUDIO_STATE");
+                 retval = hw_set_audio_state((bt_vendor_op_audio_state_t *)param);
+             }
+             break;
+ 
+         case BT_VND_OP_EPILOG:
+             {
++                ALOGI("xxxxxxxxxxxxxxbt vendor bcrm enter BT_VND_OP_EPILOG");
+ #if (HW_END_WITH_HCI_RESET == FALSE)
+                 if (bt_vendor_cbacks)
+                 {
+@@ -251,6 +259,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
+ #if (BRCM_A2DP_OFFLOAD == TRUE)
+         case BT_VND_OP_A2DP_OFFLOAD_START:
+         case BT_VND_OP_A2DP_OFFLOAD_STOP:
++                ALOGI("xxxxxxxxxxxxxxbt vendor bcrm enter BT_VND_OP_A2DP_OFFLOAD");
+             retval = brcm_vnd_a2dp_execute(opcode, param);
+             break;
+ #endif
+@@ -263,6 +272,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
+ static void cleanup( void )
+ {
+     BTVNDDBG("cleanup");
++    ALOGI(" oooooo BT Vendor oooooo cleanup");
+ 
+     upio_cleanup();
+ 
+diff --git a/src/hardware.c b/src/hardware.c
+index cd3ad7d..46653ad 100644
+--- a/src/hardware.c
++++ b/src/hardware.c
+@@ -55,9 +55,7 @@
+ **  Constants & Macros
+ ******************************************************************************/
+ 
+-#ifndef BTHW_DBG
+-#define BTHW_DBG FALSE
+-#endif
++#define BTHW_DBG TRUE
+ 
+ #if (BTHW_DBG == TRUE)
+ #define BTHWDBG(param, ...) {ALOGD(param, ## __VA_ARGS__);}
+@@ -326,7 +324,7 @@ uint32_t look_up_fw_settlement_delay (void)
+         ret_value = p_entry->delay_time;
+     }
+ 
+-    BTHWDBG( "Settlement delay -- %d ms", ret_value);
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  Settlement delay -- %d ms", ret_value);
+ 
+     return (ret_value);
+ }
+@@ -499,6 +497,7 @@ static uint8_t hw_config_findpatch(char *p_chip_id_str)
+     int filenamelen;
+     uint8_t retval = FALSE;
+ 
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  Target name = [%s]", p_chip_id_str);
+     BTHWDBG("Target name = [%s]", p_chip_id_str);
+ 
+     if (strlen(fw_patchfile_name)> 0)
+@@ -536,7 +535,7 @@ static uint8_t hw_config_findpatch(char *p_chip_id_str)
+                 if (type != NULL) {
+                     const char *needle;
+ 
+-                    BTHWDBG("Looking for Samsung %s patchfile flavour in %s",
++                    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  Looking for Samsung %s patchfile flavour in %s",
+                             type,
+                             dp->d_name);
+ 
+@@ -556,7 +555,7 @@ static uint8_t hw_config_findpatch(char *p_chip_id_str)
+                           FW_PATCHFILE_EXTENSION_LEN) \
+                      ) == 0))
+                 {
+-                    ALOGI("Found patchfile: %s/%s", \
++                    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  Found patchfile: %s/%s", \
+                         fw_patchfile_path, dp->d_name);
+ 
+                     /* Make sure length does not exceed maximum */
+@@ -635,7 +634,7 @@ static uint8_t hw_config_set_bdaddr(HC_BT_HDR *p_buf)
+     uint8_t retval = FALSE;
+     uint8_t *p = (uint8_t *) (p_buf + 1);
+ 
+-    ALOGI("Setting local bd addr to %02X:%02X:%02X:%02X:%02X:%02X",
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  Setting local bd addr to %02X:%02X:%02X:%02X:%02X:%02X",
+         vnd_local_bd_addr[0], vnd_local_bd_addr[1], vnd_local_bd_addr[2],
+         vnd_local_bd_addr[3], vnd_local_bd_addr[4], vnd_local_bd_addr[5]);
+ 
+@@ -778,7 +777,7 @@ void hw_config_cback(void *p_mem)
+         {
+             case HW_CFG_SET_UART_BAUD_1:
+                 /* update baud rate of host's UART port */
+-                ALOGI("bt vendor lib: set UART baud %i", UART_TARGET_BAUD_RATE);
++                ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  bt vendor lib: set UART baud %i", UART_TARGET_BAUD_RATE);
+                 userial_vendor_set_baud( \
+                     line_speed_to_userial_baud(UART_TARGET_BAUD_RATE) \
+                 );
+@@ -862,7 +861,7 @@ void hw_config_cback(void *p_mem)
+ 
+                 hw_cfg_cb.local_chip_name[LOCAL_NAME_BUFFER_LEN-1] = 0;
+ 
+-                BTHWDBG("Chipset %s", hw_cfg_cb.local_chip_name);
++                ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  Chipset %s", hw_cfg_cb.local_chip_name);
+ 
+                 if ((status = hw_config_findpatch(p_name)) == TRUE)
+                 {
+@@ -934,7 +933,7 @@ void hw_config_cback(void *p_mem)
+                  * sets the new starting baud rate at 115200.
+                  * So, we need update host's baud rate accordingly.
+                  */
+-                ALOGI("bt vendor lib: set UART baud 115200");
++                ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  bt vendor lib: set UART baud 115200");
+                 userial_vendor_set_baud(USERIAL_BAUD_115200);
+ 
+                 /* Next, we would like to boost baud rate up again
+@@ -946,7 +945,7 @@ void hw_config_cback(void *p_mem)
+                  * before sending down any HCI command.
+                  */
+                 delay = look_up_fw_settlement_delay();
+-                ALOGI("Setting fw settlement delay to %d ", delay);
++                ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  Setting fw settlement delay to %d ", delay);
+                 ms_delay(delay);
+ 
+                 p_buf->len = HCI_CMD_PREAMBLE_SIZE;
+@@ -992,7 +991,7 @@ void hw_config_cback(void *p_mem)
+ 
+             case HW_CFG_SET_UART_BAUD_2:
+                 /* update baud rate of host's UART port */
+-                ALOGI("bt vendor lib: set UART baud %i", UART_TARGET_BAUD_RATE);
++                ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  bt vendor lib: set UART baud %i", UART_TARGET_BAUD_RATE);
+                 userial_vendor_set_baud( \
+                     line_speed_to_userial_baud(UART_TARGET_BAUD_RATE) \
+                 );
+@@ -1006,7 +1005,7 @@ void hw_config_cback(void *p_mem)
+ #endif
+                 /* fall through intentionally */
+             case HW_CFG_SET_BD_ADDR:
+-                ALOGI("vendor lib fwcfg completed");
++                ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  vendor lib fwcfg completed");
+                 bt_vendor_cbacks->dealloc(p_buf);
+                 bt_vendor_cbacks->fwcfg_cb(BT_VND_OP_RESULT_SUCCESS);
+ 
+@@ -1035,12 +1034,12 @@ void hw_config_cback(void *p_mem)
+                 }
+                 else
+                 {
+-                    ALOGI("Controller OTP bdaddr %02X:%02X:%02X:%02X:%02X:%02X",
++                    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  Controller OTP bdaddr %02X:%02X:%02X:%02X:%02X:%02X",
+                         *(p_tmp+5), *(p_tmp+4), *(p_tmp+3),
+                         *(p_tmp+2), *(p_tmp+1), *p_tmp);
+                 }
+ 
+-                ALOGI("vendor lib fwcfg completed");
++                ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  vendor lib fwcfg completed");
+                 bt_vendor_cbacks->dealloc(p_buf);
+                 bt_vendor_cbacks->fwcfg_cb(BT_VND_OP_RESULT_SUCCESS);
+ 
+@@ -1108,13 +1107,17 @@ void hw_lpm_ctrl_cback(void *p_mem)
+     HC_BT_HDR *p_evt_buf = (HC_BT_HDR *) p_mem;
+     bt_vendor_op_result_t status = BT_VND_OP_RESULT_FAIL;
+ 
++    ALOGI("xxxxxxxxxxx enter hw_lpm_ctrl_cbac");
++
+     if (*((uint8_t *)(p_evt_buf + 1) + HCI_EVT_CMD_CMPL_STATUS_RET_BYTE) == 0)
+     {
++        ALOGI("xxxxxxxxxxx enter hw_lpm_ctrl_cbac  status = BT_VND_OP_RESULT_SUCCESS");
+         status = BT_VND_OP_RESULT_SUCCESS;
+     }
+ 
+     if (bt_vendor_cbacks)
+     {
++        ALOGI("xxxxxxxxxxx enter hw_lpm_ctrl_cbac   bt_vendor_cbacks");
+         bt_vendor_cbacks->lpm_cb(status);
+         bt_vendor_cbacks->dealloc(p_evt_buf);
+     }
+@@ -1146,6 +1149,8 @@ static void hw_sco_i2spcm_cfg_cback(void *p_mem)
+     p = (uint8_t *)(p_evt_buf + 1) + HCI_EVT_CMD_CMPL_OPCODE;
+     STREAM_TO_UINT16(opcode,p);
+ 
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_i2spcm_cfg_cback");
++
+     if (*((uint8_t *)(p_evt_buf + 1) + HCI_EVT_CMD_CMPL_STATUS_RET_BYTE) == 0)
+     {
+         status = BT_VND_OP_RESULT_SUCCESS;
+@@ -1157,15 +1162,18 @@ static void hw_sco_i2spcm_cfg_cback(void *p_mem)
+ 
+     if (status == BT_VND_OP_RESULT_SUCCESS)
+     {
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_i2spcm_cfg_cback status == BT_VND_OP_RESULT_SUCCESS");
+         if ((opcode == HCI_VSC_WRITE_I2SPCM_INTERFACE_PARAM) &&
+             (SCO_INTERFACE_PCM == sco_bus_interface))
+         {
+             uint8_t ret = FALSE;
+-
++                ALOGI("xxxxxxxxxxx enter hw_sco_i2spcm_cfg_cback 1");
+             /* Ask a new buffer to hold WRITE_SCO_PCM_INT_PARAM command */
+-            if (bt_vendor_cbacks)
++            if (bt_vendor_cbacks) {
++                ALOGI("xxxxxxxxxxx enter hw_sco_i2spcm_cfg_cback 2");
+                 p_buf = (HC_BT_HDR *)bt_vendor_cbacks->alloc(
+                         BT_HC_HDR_SIZE + HCI_CMD_PREAMBLE_SIZE + SCO_PCM_PARAM_SIZE);
++            }
+             if (p_buf)
+             {
+                 p_buf->event = MSG_STACK_TO_HC_HCI_CMD;
+@@ -1178,12 +1186,13 @@ static void hw_sco_i2spcm_cfg_cback(void *p_mem)
+                 UINT16_TO_STREAM(p, HCI_VSC_WRITE_SCO_PCM_INT_PARAM);
+                 *p++ = SCO_PCM_PARAM_SIZE;
+                 memcpy(p, &bt_sco_param, SCO_PCM_PARAM_SIZE);
+-                ALOGI("SCO PCM configure {0x%x, 0x%x, 0x%x, 0x%x, 0x%x}",
++                ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  SCO PCM configure {0x%x, 0x%x, 0x%x, 0x%x, 0x%x}",
+                         bt_sco_param[0], bt_sco_param[1], bt_sco_param[2], bt_sco_param[3],
+                         bt_sco_param[4]);
+                 if ((ret = bt_vendor_cbacks->xmit_cb(HCI_VSC_WRITE_SCO_PCM_INT_PARAM, p_buf,
+                         hw_sco_i2spcm_cfg_cback)) == FALSE)
+                 {
++                    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_i2spcm_cfg_cback 4");
+                     bt_vendor_cbacks->dealloc(p_buf);
+                 }
+                 else
+@@ -1195,11 +1204,13 @@ static void hw_sco_i2spcm_cfg_cback(void *p_mem)
+                  (SCO_INTERFACE_PCM == sco_bus_interface))
+         {
+             uint8_t ret = FALSE;
+-
++            ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_i2spcm_cfg_cback 5");
+             /* Ask a new buffer to hold WRITE_PCM_DATA_FORMAT_PARAM command */
+-            if (bt_vendor_cbacks)
++            if (bt_vendor_cbacks) {
+                 p_buf = (HC_BT_HDR *)bt_vendor_cbacks->alloc(
+                         BT_HC_HDR_SIZE + HCI_CMD_PREAMBLE_SIZE + PCM_DATA_FORMAT_PARAM_SIZE);
++                ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_i2spcm_cfg_cback 6");
++            }
+             if (p_buf)
+             {
+                 p_buf->event = MSG_STACK_TO_HC_HCI_CMD;
+@@ -1212,7 +1223,7 @@ static void hw_sco_i2spcm_cfg_cback(void *p_mem)
+                 *p++ = PCM_DATA_FORMAT_PARAM_SIZE;
+                 memcpy(p, &bt_pcm_data_fmt_param, PCM_DATA_FORMAT_PARAM_SIZE);
+ 
+-                ALOGI("SCO PCM data format {0x%x, 0x%x, 0x%x, 0x%x, 0x%x}",
++                ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  SCO PCM data format {0x%x, 0x%x, 0x%x, 0x%x, 0x%x}",
+                         bt_pcm_data_fmt_param[0], bt_pcm_data_fmt_param[1],
+                         bt_pcm_data_fmt_param[2], bt_pcm_data_fmt_param[3],
+                         bt_pcm_data_fmt_param[4]);
+@@ -1220,16 +1231,18 @@ static void hw_sco_i2spcm_cfg_cback(void *p_mem)
+                 if ((ret = bt_vendor_cbacks->xmit_cb(HCI_VSC_WRITE_PCM_DATA_FORMAT_PARAM,
+                         p_buf, hw_sco_i2spcm_cfg_cback)) == FALSE)
+                 {
++                    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_i2spcm_cfg_cback after pcm format");
+                     bt_vendor_cbacks->dealloc(p_buf);
+                 }
+                 else
+                     return;
+             }
++            ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_i2spcm_cfg_cback BT_VND_OP_RESULT_FAIL");
+             status = BT_VND_OP_RESULT_FAIL;
+         }
+     }
+ 
+-    ALOGI("sco I2S/PCM config result %d [0-Success, 1-Fail]", status);
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  sco I2S/PCM config result %d [0-Success, 1-Fail]", status);
+     if (bt_vendor_cbacks)
+     {
+         bt_vendor_cbacks->audio_state_cb(status);
+@@ -1264,7 +1277,7 @@ static void hw_set_MSBC_codec_cback(void *p_mem)
+ static void hw_set_CVSD_codec_cback(void *p_mem)
+ {
+     /* whenever update the codec enable/disable, need to update I2SPCM */
+-    ALOGI("SCO I2S interface change the sample rate to 8K");
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  SCO I2S interface change the sample rate to 8K");
+     hw_sco_i2spcm_config_from_command(p_mem, SCO_CODEC_CVSD);
+ }
+ 
+@@ -1293,6 +1306,8 @@ void hw_config_start(void)
+     hw_cfg_cb.fw_fd = -1;
+     hw_cfg_cb.f_set_baud_2 = FALSE;
+ 
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_config_start");
++
+ #ifdef BLUEDROID_ENABLE_V4L2
+     bt_vendor_cbacks->fwcfg_cb(BT_VND_OP_RESULT_SUCCESS);
+ #else
+@@ -1300,12 +1315,14 @@ void hw_config_start(void)
+ 
+     if (bt_vendor_cbacks)
+     {
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_config_start 1");
+         p_buf = (HC_BT_HDR *) bt_vendor_cbacks->alloc(BT_HC_HDR_SIZE + \
+                                                        HCI_CMD_PREAMBLE_SIZE);
+     }
+ 
+     if (p_buf)
+     {
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_config_start 2");
+         p_buf->event = MSG_STACK_TO_HC_HCI_CMD;
+         p_buf->offset = 0;
+         p_buf->layer_specific = 0;
+@@ -1321,6 +1338,7 @@ void hw_config_start(void)
+     }
+     else
+     {
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_config_start 3");
+         if (bt_vendor_cbacks)
+         {
+             ALOGE("vendor lib fw conf aborted [no buffer]");
+@@ -1344,7 +1362,7 @@ uint8_t hw_lpm_enable(uint8_t turn_on)
+     HC_BT_HDR  *p_buf = NULL;
+     uint8_t     *p;
+     uint8_t     ret = FALSE;
+-
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_lpm_enable");
+     if (bt_vendor_cbacks)
+         p_buf = (HC_BT_HDR *) bt_vendor_cbacks->alloc(BT_HC_HDR_SIZE + \
+                                                        HCI_CMD_PREAMBLE_SIZE + \
+@@ -1401,6 +1419,8 @@ uint32_t hw_lpm_get_idle_timeout(void)
+     /* set idle time to be LPM_IDLE_TIMEOUT_MULTIPLE times of
+      * host stack idle threshold (in 300ms/25ms)
+      */
++
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_lpm_get_idle_timeout");
+     timeout_ms = (uint32_t)lpm_param.host_stack_idle_threshold \
+                             * LPM_IDLE_TIMEOUT_MULTIPLE;
+     if (strstr(hw_cfg_cb.local_chip_name, "BCM4325") != NULL)
+@@ -1424,6 +1444,7 @@ uint32_t hw_lpm_get_idle_timeout(void)
+ *******************************************************************************/
+ void hw_lpm_set_wake_state(uint8_t wake_assert)
+ {
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_lpm_set_wake_state");
+     uint8_t state = (wake_assert) ? UPIO_ASSERT : UPIO_DEASSERT;
+ 
+     upio_set(UPIO_BT_WAKE, state, lpm_param.bt_wake_polarity);
+@@ -1441,8 +1462,10 @@ void hw_lpm_set_wake_state(uint8_t wake_assert)
+ *******************************************************************************/
+ void hw_sco_config(void)
+ {
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_config");
+     if (SCO_INTERFACE_I2S == sco_bus_interface)
+     {
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_config 1");
+         /* 'Enable' I2S mode */
+         bt_sco_i2spcm_param[0] = 1;
+ 
+@@ -1451,6 +1474,7 @@ void hw_sco_config(void)
+     }
+     else
+     {
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_config 2");
+         /* 'Disable' I2S mode */
+         bt_sco_i2spcm_param[0] = 0;
+ 
+@@ -1463,11 +1487,14 @@ void hw_sco_config(void)
+ 
+     if (sco_bus_wbs_clock_rate == INVALID_SCO_CLOCK_RATE)
+     {
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_config 3");
+         /* set default wbs clock rate */
+         sco_bus_wbs_clock_rate = SCO_I2SPCM_IF_CLOCK_RATE4WBS;
+ 
+-        if (sco_bus_wbs_clock_rate < sco_bus_clock_rate)
++        if (sco_bus_wbs_clock_rate < sco_bus_clock_rate) {
++            ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_config 4");
+             sco_bus_wbs_clock_rate = sco_bus_clock_rate;
++        }
+     }
+ 
+     /*
+@@ -1480,11 +1507,13 @@ void hw_sco_config(void)
+      */
+ 
+     if (SCO_INTERFACE_I2S == sco_bus_interface) {
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_config 5");
+         hw_sco_i2spcm_config(SCO_CODEC_CVSD);
+     }
+ 
+     if (bt_vendor_cbacks)
+     {
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_config 6");
+         bt_vendor_cbacks->scocfg_cb(BT_VND_OP_RESULT_SUCCESS);
+     }
+ }
+@@ -1492,15 +1521,19 @@ void hw_sco_config(void)
+ static void hw_sco_i2spcm_config_from_command(void *p_mem, uint16_t codec) {
+     HC_BT_HDR *p_evt_buf = (HC_BT_HDR *)p_mem;
+     bool command_success = *((uint8_t *)(p_evt_buf + 1) + HCI_EVT_CMD_CMPL_STATUS_RET_BYTE) == 0;
+-
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_i2spcm_config_from_command");
+     /* Free the RX event buffer */
+-    if (bt_vendor_cbacks)
++    if (bt_vendor_cbacks) {
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_i2spcm_config_from_command 1");
+         bt_vendor_cbacks->dealloc(p_evt_buf);
+-
+-    if (command_success)
++    }
++    if (command_success) {
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_i2spcm_config_from_command 2");
+         hw_sco_i2spcm_config(codec);
+-    else if (bt_vendor_cbacks)
++    } else if (bt_vendor_cbacks) {
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_sco_i2spcm_config_from_command 3");
+         bt_vendor_cbacks->audio_state_cb(BT_VND_OP_RESULT_FAIL);
++    }
+ }
+ 
+ 
+@@ -1518,7 +1551,7 @@ static void hw_sco_i2spcm_config(uint16_t codec)
+     HC_BT_HDR *p_buf = NULL;
+     uint8_t *p, ret;
+     uint16_t cmd_u16 = HCI_CMD_PREAMBLE_SIZE + SCO_I2SPCM_PARAM_SIZE;
+-
++    ALOGI("xxxxxxxxxxx enter hw_sco_i2spcm_config");
+     if (bt_vendor_cbacks)
+         p_buf = (HC_BT_HDR *)bt_vendor_cbacks->alloc(BT_HC_HDR_SIZE + cmd_u16);
+ 
+@@ -1551,7 +1584,7 @@ static void hw_sco_i2spcm_config(uint16_t codec)
+         }
+         memcpy(p, &bt_sco_i2spcm_param, SCO_I2SPCM_PARAM_SIZE);
+         cmd_u16 = HCI_VSC_WRITE_I2SPCM_INTERFACE_PARAM;
+-        ALOGI("I2SPCM config {0x%x, 0x%x, 0x%x, 0x%x}",
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  I2SPCM config {0x%x, 0x%x, 0x%x, 0x%x}",
+                 bt_sco_i2spcm_param[0], bt_sco_i2spcm_param[1],
+                 bt_sco_i2spcm_param[2], bt_sco_i2spcm_param[3]);
+ 
+@@ -1586,13 +1619,17 @@ static int hw_set_SCO_codec(uint16_t codec)
+     tINT_CMD_CBACK p_set_SCO_codec_cback;
+ 
+     BTHWDBG( "hw_set_SCO_codec 0x%x", codec);
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_set_SCO_codec");
+ 
+-    if (bt_vendor_cbacks)
++    if (bt_vendor_cbacks) {
+         p_buf = (HC_BT_HDR *)bt_vendor_cbacks->alloc(
+                 BT_HC_HDR_SIZE + HCI_CMD_PREAMBLE_SIZE + SCO_CODEC_PARAM_SIZE);
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_set_SCO_codec 1");
++    }
+ 
+     if (p_buf)
+     {
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_set_SCO_codec2 ");
+         p_buf->event = MSG_STACK_TO_HC_HCI_CMD;
+         p_buf->offset = 0;
+         p_buf->layer_specific = 0;
+@@ -1602,6 +1639,7 @@ static int hw_set_SCO_codec(uint16_t codec)
+ 
+         if (codec == SCO_CODEC_MSBC)
+         {
++            ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_set_SCO_codec3");
+             /* Enable mSBC */
+             *p++ = SCO_CODEC_PARAM_SIZE; /* set the parameter size */
+             UINT8_TO_STREAM(p,1); /* enable */
+@@ -1614,6 +1652,7 @@ static int hw_set_SCO_codec(uint16_t codec)
+         }
+         else
+         {
++            ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_set_SCO_codec4");
+             /* Disable mSBC */
+             *p++ = (SCO_CODEC_PARAM_SIZE - 2); /* set the parameter size */
+             UINT8_TO_STREAM(p,0); /* disable */
+@@ -1631,12 +1670,14 @@ static int hw_set_SCO_codec(uint16_t codec)
+         if ((ret = bt_vendor_cbacks->xmit_cb(HCI_VSC_ENABLE_WBS, p_buf, p_set_SCO_codec_cback))\
+               == FALSE)
+         {
++            ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_set_SCO_codec5");
+             bt_vendor_cbacks->dealloc(p_buf);
+             ret_val = -1;
+         }
+     }
+     else
+     {
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_set_SCO_codec6");
+         ret_val = -1;
+     }
+ 
+@@ -1657,9 +1698,11 @@ static int hw_set_SCO_codec(uint16_t codec)
+ int hw_set_audio_state(bt_vendor_op_audio_state_t *p_state)
+ {
+     int ret_val = -1;
+-
+-    if (!bt_vendor_cbacks)
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_set_audio_state");
++    if (!bt_vendor_cbacks) {
++        ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_set_audio_state1");
+         return ret_val;
++    }
+ 
+     ret_val = hw_set_SCO_codec(p_state->peer_codec);
+     return ret_val;
+@@ -1668,6 +1711,7 @@ int hw_set_audio_state(bt_vendor_op_audio_state_t *p_state)
+ #else  // SCO_CFG_INCLUDED
+ int hw_set_audio_state(bt_vendor_op_audio_state_t *p_state)
+ {
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx   enter hw_set_audio_state3");
+     return -256;
+ }
+ #endif
+@@ -1770,13 +1814,13 @@ void hw_epilog_cback(void *p_mem)
+     p = (uint8_t *)(p_evt_buf + 1) + HCI_EVT_CMD_CMPL_OPCODE;
+     STREAM_TO_UINT16(opcode,p);
+ 
+-    BTHWDBG("%s Opcode:0x%04X Status: %d", __FUNCTION__, opcode, status);
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  %s Opcode:0x%04X Status: %d", __FUNCTION__, opcode, status);
+ 
+     if (bt_vendor_cbacks)
+     {
+         /* Must free the RX event buffer */
+         bt_vendor_cbacks->dealloc(p_evt_buf);
+-
++    ALOGI(" xxxxxxxx BT Vendor xxxxxxxx  %s Opcode:0x%04X bt vendor checks Status: %d", __FUNCTION__, opcode, status);
+         /* Once epilog process is done, must call epilog_cb callback
+            to notify caller */
+         bt_vendor_cbacks->epilog_cb(BT_VND_OP_RESULT_SUCCESS);
+-- 
+2.7.4
+

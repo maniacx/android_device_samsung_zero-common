@@ -1,0 +1,29 @@
+From 4ee3a31d01164b65dbe21579deb4839d418f1beb Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sun, 13 May 2018 14:28:43 +0400
+Subject: [PATCH 03/18] Remove reboot hot and bootloader option until we fix it
+
+Change-Id: I5475bfb1ad8fd051c663a578708d61b1a580924f
+---
+ .../src/com/android/systemui/globalactions/GlobalActionsDialog.java   | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsDialog.java b/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsDialog.java
+index 9a77b30..db74b30 100644
+--- a/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsDialog.java
++++ b/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsDialog.java
+@@ -1671,9 +1671,9 @@ class GlobalActionsDialog implements DialogInterface.OnDismissListener, DialogIn
+ 
+     private void addNewItems() {
+         mItems.clear();
+-        mItems.add(mRestartHot);
++//        mItems.add(mRestartHot);
+         mItems.add(mRestartRecovery);
+-        mItems.add(mRestartBootloader);
++//        mItems.add(mRestartBootloader);
+         mItems.add(mRestartSystemUI);
+     }
+ 
+-- 
+2.7.4
+

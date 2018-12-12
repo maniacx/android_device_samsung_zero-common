@@ -1,0 +1,203 @@
+From c006ae419f52617363634f0e4801f5c10bb84727 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Tue, 18 Sep 2018 23:02:51 +0530
+Subject: [PATCH 4/5] Remove unused code
+
+Change-Id: I5e48619f6bc0676b708da8b8b925416be8f2f6d8
+---
+ ril/libril/Android.mk      |  3 ++-
+ ril/libril/RilSapSocket.h  | 16 ----------------
+ ril/libril/ril.cpp         | 24 ------------------------
+ ril/libril/ril_service.cpp |  4 ----
+ ril/libril/sap_service.cpp |  1 -
+ 5 files changed, 2 insertions(+), 46 deletions(-)
+
+diff --git a/ril/libril/Android.mk b/ril/libril/Android.mk
+index eb23fd1..3a4ebce 100644
+--- a/ril/libril/Android.mk
++++ b/ril/libril/Android.mk
+@@ -21,6 +21,7 @@ LOCAL_SHARED_LIBRARIES := \
+     libhardware_legacy \
+     librilutils \
+     android.hardware.radio@1.0 \
++    android.hardware.radio@1.1 \
+     android.hardware.radio.deprecated@1.0 \
+     libhidlbase  \
+     libhidltransport \
+@@ -29,7 +30,7 @@ LOCAL_SHARED_LIBRARIES := \
+ LOCAL_STATIC_LIBRARIES := \
+     libprotobuf-c-nano-enable_malloc \
+ 
+-LOCAL_CFLAGS += -Wno-unused-parameter
++LOCAL_CFLAGS += -Wall -Wextra -Wno-unused-parameter -Werror
+ 
+ ifeq ($(SIM_COUNT), 2)
+     LOCAL_CFLAGS += -DANDROID_MULTI_SIM -DDSDA_RILD1
+diff --git a/ril/libril/RilSapSocket.h b/ril/libril/RilSapSocket.h
+index 1f6163e..8c8c4bc 100644
+--- a/ril/libril/RilSapSocket.h
++++ b/ril/libril/RilSapSocket.h
+@@ -36,22 +36,6 @@
+  */
+ class RilSapSocket : public RilSocket {
+     /**
+-     * Function pointer to the ril initialization funtion.
+-     *
+-     * @param Ril environment variable with place request and
+-     *        response handlers and timeout handler.
+-     *
+-     * @param Number of arguements for the initialization function.
+-     *
+-     * @param Arguements to the initialization function used to
+-     *        generate instance id of the ril daemon.
+-     *
+-     * @return Radio functions with handlers for onRequest, onStateRequest,
+-     *         supports, onCancel and getVersion.
+-     */
+-    RIL_RadioFunctions *(*UimInit)(const struct RIL_Env *, int argc, char **argv);
+-
+-    /**
+      * Place holder for the radio functions returned by the initialization
+      * function. Currenty only onRequest handler is being used.
+      */
+diff --git a/ril/libril/ril.cpp b/ril/libril/ril.cpp
+index d794f02..a6cac4a 100644
+--- a/ril/libril/ril.cpp
++++ b/ril/libril/ril.cpp
+@@ -114,12 +114,8 @@ RIL_RadioFunctions s_callbacks = {0, NULL, NULL, NULL, NULL, NULL};
+ static int s_registerCalled = 0;
+ 
+ static pthread_t s_tid_dispatch;
+-static pthread_t s_tid_reader;
+ static int s_started = 0;
+ 
+-static int s_fdDebug = -1;
+-static int s_fdDebug_socket2 = -1;
+-
+ static int s_fdWakeupRead;
+ static int s_fdWakeupWrite;
+ 
+@@ -128,44 +124,30 @@ int s_wakelock_count = 0;
+ static struct ril_event s_wakeupfd_event;
+ 
+ static pthread_mutex_t s_pendingRequestsMutex = PTHREAD_MUTEX_INITIALIZER;
+-static pthread_mutex_t s_writeMutex = PTHREAD_MUTEX_INITIALIZER;
+ static pthread_mutex_t s_wakeLockCountMutex = PTHREAD_MUTEX_INITIALIZER;
+ static RequestInfo *s_pendingRequests = NULL;
+ 
+ #if (SIM_COUNT >= 2)
+ static pthread_mutex_t s_pendingRequestsMutex_socket2  = PTHREAD_MUTEX_INITIALIZER;
+-static pthread_mutex_t s_writeMutex_socket2            = PTHREAD_MUTEX_INITIALIZER;
+ static RequestInfo *s_pendingRequests_socket2          = NULL;
+ #endif
+ 
+ #if (SIM_COUNT >= 3)
+ static pthread_mutex_t s_pendingRequestsMutex_socket3  = PTHREAD_MUTEX_INITIALIZER;
+-static pthread_mutex_t s_writeMutex_socket3            = PTHREAD_MUTEX_INITIALIZER;
+ static RequestInfo *s_pendingRequests_socket3          = NULL;
+ #endif
+ 
+ #if (SIM_COUNT >= 4)
+ static pthread_mutex_t s_pendingRequestsMutex_socket4  = PTHREAD_MUTEX_INITIALIZER;
+-static pthread_mutex_t s_writeMutex_socket4            = PTHREAD_MUTEX_INITIALIZER;
+ static RequestInfo *s_pendingRequests_socket4          = NULL;
+ #endif
+ 
+-static struct ril_event s_wake_timeout_event;
+-static struct ril_event s_debug_event;
+-
+-
+ static const struct timeval TIMEVAL_WAKE_TIMEOUT = {ANDROID_WAKE_LOCK_SECS,ANDROID_WAKE_LOCK_USECS};
+ 
+ 
+ static pthread_mutex_t s_startupMutex = PTHREAD_MUTEX_INITIALIZER;
+ static pthread_cond_t s_startupCond = PTHREAD_COND_INITIALIZER;
+ 
+-static pthread_mutex_t s_dispatchMutex = PTHREAD_MUTEX_INITIALIZER;
+-static pthread_cond_t s_dispatchCond = PTHREAD_COND_INITIALIZER;
+-
+-static RequestInfo *s_toDispatchHead = NULL;
+-static RequestInfo *s_toDispatchTail = NULL;
+-
+ static UserCallbackInfo *s_last_wake_timeout_info = NULL;
+ 
+ static void *s_lastNITZTimeData = NULL;
+@@ -455,9 +437,6 @@ extern "C" void RIL_setcallbacks (const RIL_RadioFunctions *callbacks) {
+ 
+ extern "C" void
+ RIL_register (const RIL_RadioFunctions *callbacks) {
+-    int ret;
+-    int flags;
+-
+     RLOGI("SIM_COUNT: %d", SIM_COUNT);
+ 
+     if (callbacks == NULL) {
+@@ -602,9 +581,7 @@ checkAndDequeueRequestInfoIfAck(struct RequestInfo *pRI, bool isAck) {
+ extern "C" void
+ RIL_onRequestAck(RIL_Token t) {
+     RequestInfo *pRI;
+-    int ret;
+ 
+-    size_t errorOffset;
+     RIL_SOCKET_ID socket_id = RIL_SOCKET_1;
+ 
+     pRI = (RequestInfo *)t;
+@@ -638,7 +615,6 @@ extern "C" void
+ RIL_onRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t responselen) {
+     RequestInfo *pRI;
+     int ret;
+-    size_t errorOffset;
+     RIL_SOCKET_ID socket_id = RIL_SOCKET_1;
+ 
+     pRI = (RequestInfo *)t;
+diff --git a/ril/libril/ril_service.cpp b/ril/libril/ril_service.cpp
+index acad18d..76670df 100644
+--- a/ril/libril/ril_service.cpp
++++ b/ril/libril/ril_service.cpp
+@@ -1408,7 +1408,6 @@ Return<void> RadioImpl::writeSmsToSim(int32_t serial, const SmsWriteArgs& smsWri
+     RIL_SMS_WriteArgs args;
+     args.status = (int) smsWriteArgs.status;
+ 
+-    int len;
+     if (!copyHidlStringToRil(&args.pdu, smsWriteArgs.pdu, pRI)) {
+         return Void();
+     }
+@@ -2308,7 +2307,6 @@ Return<void> RadioImpl::requestIccSimAuthentication(int32_t serial, int32_t auth
+ 
+     pf.authContext = authContext;
+ 
+-    int len;
+     if (!copyHidlStringToRil(&pf.authData, authData, pRI)) {
+         return Void();
+     }
+@@ -4276,7 +4274,6 @@ int radio::getNetworkSelectionModeResponse(int slotId,
+         RadioResponseInfo responseInfo = {};
+         populateResponseInfo(responseInfo, serial, responseType, e);
+         bool manual = false;
+-        int serviceClass;
+         if (response == NULL || responseLen % sizeof(int) != 0) {
+             RLOGE("getNetworkSelectionModeResponse Invalid response: NULL");
+             if (e == RIL_E_SUCCESS) responseInfo.error = RadioError::INVALID_RESPONSE;
+@@ -4515,7 +4512,6 @@ int radio::getMuteResponse(int slotId,
+         RadioResponseInfo responseInfo = {};
+         populateResponseInfo(responseInfo, serial, responseType, e);
+         bool enable = false;
+-        int serviceClass;
+         if (response == NULL || responseLen % sizeof(int) != 0) {
+             RLOGE("getMuteResponse Invalid response: NULL");
+             if (e == RIL_E_SUCCESS) responseInfo.error = RadioError::INVALID_RESPONSE;
+diff --git a/ril/libril/sap_service.cpp b/ril/libril/sap_service.cpp
+index 7bed05a..254d000 100644
+--- a/ril/libril/sap_service.cpp
++++ b/ril/libril/sap_service.cpp
+@@ -532,7 +532,6 @@ Return<void> SapImpl::setTransferProtocolReq(int32_t token, SapTransferProtocol
+ 
+ void *sapDecodeMessage(MsgId msgId, MsgType msgType, uint8_t *payloadPtr, size_t payloadLen) {
+     void *responsePtr = NULL;
+-    bool decodeStatus = false;
+     pb_istream_t stream;
+ 
+     /* Create the stream */
+-- 
+2.7.4
+

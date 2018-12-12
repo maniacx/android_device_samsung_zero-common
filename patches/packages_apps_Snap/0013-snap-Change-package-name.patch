@@ -1,0 +1,26 @@
+From 7e4d0aab8866e994240540306a68091d40a4764f Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sat, 7 Jul 2018 16:30:06 +0400
+Subject: [PATCH 13/14] snap: Change package name
+
+Change-Id: I8920c5944fcf3f98efeba9ac2c218634974e9833
+---
+ AndroidManifest.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index e0654f8..2441349 100755
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -7,7 +7,7 @@
+         android:minSdkVersion="23"
+         android:targetSdkVersion="26" />
+ 
+-    <original-package android:name="org.cyanogenmod.snap" />
++    <original-package android:name="org.lineageos.snap" />
+ 
+     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+-- 
+2.7.4
+

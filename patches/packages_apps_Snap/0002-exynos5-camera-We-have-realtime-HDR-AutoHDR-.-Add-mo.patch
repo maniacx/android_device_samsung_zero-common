@@ -1,0 +1,1666 @@
+From fc45704ac953c5288f4bfe43ed0ad32c3b32afa6 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Tue, 15 May 2018 07:01:32 +0400
+Subject: [PATCH 02/14] exynos5 camera: We have realtime HDR (AutoHDR). Add
+ modes on,off and auto for hdr. Unlink RTHDR from SCENE_MODE_HDR.
+ (SCENE_MODE_HDR is seen as PRO mode in stock samsung camera app) Keep HDR
+ button visible in any scene mode. (Similar to our stock samsung camera app)
+
+Change-Id: I2213ed0dd51fbde44f18f977537f1db4f76061da
+---
+ res/drawable/ic_hdr.xml                    | 15 ++++------
+ res/drawable/ic_hdr_off.xml                | 34 +++++++++++++---------
+ res/drawable/ic_hdr_on.xml                 | 20 +++++++++++++
+ res/drawable/ic_scene_mode_hdr.xml         | 24 ++++++----------
+ res/drawable/ic_settings_hdr_auto.xml      | 46 +++++++++++++++++-------------
+ res/values-af/strings.xml                  |  4 +--
+ res/values-as-rIN/strings.xml              |  4 +--
+ res/values-be/strings.xml                  |  4 +--
+ res/values-bg/strings.xml                  |  4 +--
+ res/values-ca/strings.xml                  |  4 +--
+ res/values-cs/strings.xml                  |  4 +--
+ res/values-da/strings.xml                  |  4 +--
+ res/values-de/strings.xml                  |  4 +--
+ res/values-el/strings.xml                  |  4 +--
+ res/values-en-rAU/strings.xml              |  4 +--
+ res/values-en-rGB/strings.xml              |  4 +--
+ res/values-en-rIN/strings.xml              |  4 +--
+ res/values-es-rMX/strings.xml              |  4 +--
+ res/values-es-rUS/strings.xml              |  4 +--
+ res/values-es/strings.xml                  |  2 +-
+ res/values-et/strings.xml                  |  4 +--
+ res/values-eu/strings.xml                  |  4 +--
+ res/values-fi/strings.xml                  |  4 +--
+ res/values-fr/strings.xml                  |  4 +--
+ res/values-gl/strings.xml                  |  4 +--
+ res/values-gu/strings.xml                  |  4 +--
+ res/values-hu/strings.xml                  |  4 +--
+ res/values-in/strings.xml                  |  4 +--
+ res/values-it/strings.xml                  |  4 +--
+ res/values-iw/strings.xml                  |  4 +--
+ res/values-ja/strings.xml                  |  4 +--
+ res/values-kn/strings.xml                  |  4 +--
+ res/values-ko/strings.xml                  |  4 +--
+ res/values-lb/strings.xml                  |  4 +--
+ res/values-ml/strings.xml                  |  4 +--
+ res/values-mr/strings.xml                  |  4 +--
+ res/values-nb/strings.xml                  |  4 +--
+ res/values-nl/strings.xml                  |  4 +--
+ res/values-or-rIN/strings.xml              |  4 +--
+ res/values-pl/strings.xml                  |  4 +--
+ res/values-pt-rBR/strings.xml              |  4 +--
+ res/values-pt-rPT/strings.xml              |  4 +--
+ res/values-ro/strings.xml                  |  4 +--
+ res/values-ru/strings.xml                  |  4 +--
+ res/values-sk/strings.xml                  |  4 +--
+ res/values-sl/strings.xml                  |  4 +--
+ res/values-sq/strings.xml                  |  4 +--
+ res/values-sr/strings.xml                  |  4 +--
+ res/values-sv/strings.xml                  |  4 +--
+ res/values-ta/strings.xml                  |  4 +--
+ res/values-te/strings.xml                  |  4 +--
+ res/values-th/strings.xml                  |  4 +--
+ res/values-tr/strings.xml                  |  4 +--
+ res/values-ug/strings.xml                  |  4 +--
+ res/values-uk/strings.xml                  |  4 +--
+ res/values-vi/strings.xml                  |  4 +--
+ res/values-zh-rCN/strings.xml              |  4 +--
+ res/values-zh-rTW/strings.xml              |  4 +--
+ res/values/arrays.xml                      |  6 +++-
+ res/values/strings.xml                     | 10 +++++--
+ src/com/android/camera/CameraSettings.java | 24 ++++++++++++++++
+ src/com/android/camera/PhotoMenu.java      | 37 ++----------------------
+ src/com/android/camera/PhotoModule.java    | 39 +++++++------------------
+ 63 files changed, 235 insertions(+), 230 deletions(-)
+ create mode 100644 res/drawable/ic_hdr_on.xml
+
+diff --git a/res/drawable/ic_hdr.xml b/res/drawable/ic_hdr.xml
+index 63e9e34..90c7f84 100644
+--- a/res/drawable/ic_hdr.xml
++++ b/res/drawable/ic_hdr.xml
+@@ -2,17 +2,12 @@
+ <vector xmlns:android="http://schemas.android.com/apk/res/android"
+     android:width="24dp"
+     android:height="24dp"
+-    android:viewportWidth="48"
+-    android:viewportHeight="48">
++    android:viewportWidth="24"
++    android:viewportHeight="24">
+ 
+     <path
+-        android:pathData="M0 0h48v48h-48z" />
+-    <path
+         android:fillColor="@color/white"
+-        android:pathData="M12 22h-4v-8h-4v20h4v-8h4v8h4v-20h-4v8zm14-8h-8v20h8c2.21 0 4-1.79
+-4-4v-12c0-2.21-1.79-4-4-4zm0
+-16h-4v-12h4v12zm18-8v-4c0-2.21-1.79-4-4-4h-8v20h4v-8h2l2 8h4l-2.38-8.35c1.4-.62
+-2.38-2.02 2.38-3.65zm-4 0h-4v-4h4v4z" />
+-    <path
+-        android:pathData="M0 0h48v48h-48z" />
++        android:pathData="M21 11.5v-1c0-.8-.7-1.5-1.5-1.5H16v6h1.5v-2h1.1l.9 2H21l-.9-2.1c.5-.3 .9 -.8 .9
++-1.4zm-1.5 0h-2v-1h2v1zm-13-.5h-2V9H3v6h1.5v-2.5h2V15H8V9H6.5v2zM13
++9H9.5v6H13c.8 0 1.5-.7 1.5-1.5v-3c0-.8-.7-1.5-1.5-1.5zm0 4.5h-2v-3h2v3z" />
+ </vector>
+diff --git a/res/drawable/ic_hdr_off.xml b/res/drawable/ic_hdr_off.xml
+index 7e1d8be..b551561 100644
+--- a/res/drawable/ic_hdr_off.xml
++++ b/res/drawable/ic_hdr_off.xml
+@@ -1,17 +1,25 @@
+-<?xml version="1.0" encoding="utf-8"?>
+ <vector xmlns:android="http://schemas.android.com/apk/res/android"
+-    android:width="24dp"
+-    android:height="24dp"
+-    android:viewportWidth="48"
+-    android:viewportHeight="48">
+-
++        android:width="24dp"
++        android:height="24dp"
++        android:viewportWidth="24.0"
++        android:viewportHeight="24.0">
+     <path
+-        android:pathData="M0 0h48v48h-48zm0 0h48v48h-48z" />
++        android:pathData="m6.199,10.003h-2L4.199,6.003h-2v10h2v-4h2v4h2L8.199,6.003h-2zM13.199,6.003L9.199,6.003v10h4c1.105,0 2,-0.895 2,-2L15.199,8.003c0,-1.105 -0.895,-2 -2,-2zM13.199,14.003h-2L11.199,8.003h2zM22.199,10.003L22.199,8.003c0,-1.105 -0.895,-2 -2,-2h-4v10h2v-4h1l1,4h2l-1.19,-4.175c0.7,-0.31 1.19,-1.01 1.19,-1.825zM20.199,10.003h-2L18.199,8.003h2z"
++        android:fillColor="#ffffff"
++        android:strokeWidth="0.5"/>
+     <path
+-        android:fillColor="@color/white"
+-        android:pathData="M36 34l-29.46-29.45-2.54 2.54 8 8v6.91h-4v-8h-4v20h4v-8h4v8h4v-14.91l2
+-2v12.91h8c1.34 0 2.51-.66 3.24-1.67l12.67 12.67
+-2.54-2.55-8.45-8.45zm-10-4h-4v-4.91l4 4v.91zm10-4h2l1.64 6.54 1.45
+-1.46h2.91l-2.38-8.35c1.4-.62 2.38-2.02 2.38-3.65v-4c0-2.21-1.79-4-4-4h-8v10.91l4
+-4v-2.91zm0-8h4v4h-4v-4zm-6 4.91v-4.91c0-2.21-1.79-4-4-4h-4.91l8.91 8.91z" />
++        android:pathData="m9.868,21.076q-0.293,0.16 -0.677,0.16 -0.384,0 -0.677,-0.16 -0.293,-0.165 -0.469,-0.448 -0.171,-0.283 -0.261,-0.624 -0.085,-0.347 -0.085,-0.741 0,-0.357 0.085,-0.677 0.091,-0.325 0.261,-0.597 0.176,-0.272 0.469,-0.432 0.299,-0.165 0.677,-0.165 0.379,0 0.672,0.165 0.299,0.16 0.469,0.432 0.176,0.272 0.261,0.597 0.091,0.32 0.091,0.677 0,0.395 -0.091,0.741 -0.085,0.341 -0.261,0.624 -0.171,0.283 -0.464,0.448zM9.836,18.324q-0.219,-0.4 -0.645,-0.4 -0.427,0 -0.645,0.4 -0.219,0.4 -0.219,0.939 0,0.352 0.08,0.667 0.085,0.315 0.288,0.544 0.208,0.229 0.496,0.229 0.288,0 0.491,-0.229 0.208,-0.229 0.288,-0.544 0.085,-0.315 0.085,-0.667 0,-0.539 -0.219,-0.939z"
++        android:fillAlpha="1"
++        android:strokeColor="#00000000"
++        android:fillColor="#ffffff"/>
++    <path
++        android:pathData="m11.999,18.009v1.104h1.365v0.533h-1.365v1.563H11.37v-3.733h2.347v0.533z"
++        android:fillAlpha="1"
++        android:strokeColor="#00000000"
++        android:fillColor="#ffffff"/>
++    <path
++        android:pathData="m14.822,18.009v1.104h1.365v0.533h-1.365v1.563h-0.629v-3.733h2.347v0.533z"
++        android:fillAlpha="1"
++        android:strokeColor="#00000000"
++        android:fillColor="#ffffff"/>
+ </vector>
+diff --git a/res/drawable/ic_hdr_on.xml b/res/drawable/ic_hdr_on.xml
+new file mode 100644
+index 0000000..6dabcfe
+--- /dev/null
++++ b/res/drawable/ic_hdr_on.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++        android:width="24dp"
++        android:height="24dp"
++        android:viewportWidth="24.0"
++        android:viewportHeight="24.0">
++    <path
++        android:pathData="m6.199,10.003h-2L4.199,6.003h-2v10h2v-4h2v4h2L8.199,6.003h-2zM13.199,6.003L9.199,6.003v10h4c1.105,0 2,-0.895 2,-2L15.199,8.003c0,-1.105 -0.895,-2 -2,-2zM13.199,14.003h-2L11.199,8.003h2zM22.199,10.003L22.199,8.003c0,-1.105 -0.895,-2 -2,-2h-4v10h2v-4h1l1,4h2l-1.19,-4.175c0.7,-0.31 1.19,-1.01 1.19,-1.825zM20.199,10.003h-2L18.199,8.003h2z"
++        android:fillColor="#ffffff"
++        android:strokeWidth="0.5"/>
++    <path
++        android:pathData="m11.144,20.996q-0.293,0.16 -0.677,0.16 -0.384,0 -0.677,-0.16 -0.293,-0.165 -0.469,-0.448 -0.171,-0.283 -0.261,-0.624 -0.085,-0.347 -0.085,-0.741 0,-0.357 0.085,-0.677 0.091,-0.325 0.261,-0.597 0.176,-0.272 0.469,-0.432 0.299,-0.165 0.677,-0.165 0.379,0 0.672,0.165 0.299,0.16 0.469,0.432 0.176,0.272 0.261,0.597 0.091,0.32 0.091,0.677 0,0.395 -0.091,0.741 -0.085,0.341 -0.261,0.624 -0.171,0.283 -0.464,0.448zM11.112,18.244q-0.219,-0.4 -0.645,-0.4 -0.427,0 -0.645,0.4 -0.219,0.4 -0.219,0.939 0,0.352 0.08,0.667 0.085,0.315 0.288,0.544 0.208,0.229 0.496,0.229 0.288,0 0.491,-0.229 0.208,-0.229 0.288,-0.544 0.085,-0.315 0.085,-0.667 0,-0.539 -0.219,-0.939z"
++        android:fillAlpha="1"
++        android:strokeColor="#00000000"
++        android:fillColor="#ffffff"/>
++    <path
++        android:pathData="m14.645,21.13 l-1.371,-2.8v2.8h-0.629v-3.733h0.741l1.195,2.491v-2.491h0.629v3.733z"
++        android:fillAlpha="1"
++        android:strokeColor="#00000000"
++        android:fillColor="#ffffff"/>
++</vector>
+diff --git a/res/drawable/ic_scene_mode_hdr.xml b/res/drawable/ic_scene_mode_hdr.xml
+index 63e9e34..7a7725b 100644
+--- a/res/drawable/ic_scene_mode_hdr.xml
++++ b/res/drawable/ic_scene_mode_hdr.xml
+@@ -1,18 +1,10 @@
+-<?xml version="1.0" encoding="utf-8"?>
+ <vector xmlns:android="http://schemas.android.com/apk/res/android"
+-    android:width="24dp"
+-    android:height="24dp"
+-    android:viewportWidth="48"
+-    android:viewportHeight="48">
+-
++        android:width="24dp"
++        android:height="24dp"
++        android:viewportWidth="24.0"
++        android:viewportHeight="24.0">
+     <path
+-        android:pathData="M0 0h48v48h-48z" />
+-    <path
+-        android:fillColor="@color/white"
+-        android:pathData="M12 22h-4v-8h-4v20h4v-8h4v8h4v-20h-4v8zm14-8h-8v20h8c2.21 0 4-1.79
+-4-4v-12c0-2.21-1.79-4-4-4zm0
+-16h-4v-12h4v12zm18-8v-4c0-2.21-1.79-4-4-4h-8v20h4v-8h2l2 8h4l-2.38-8.35c1.4-.62
+-2.38-2.02 2.38-3.65zm-4 0h-4v-4h4v4z" />
+-    <path
+-        android:pathData="M0 0h48v48h-48z" />
+-</vector>
++        android:pathData="M10.548,23.049C6.689,22.598 3.238,20.049 1.653,16.48 0.464,13.802 0.465,10.236 1.654,7.556 3.027,4.465 5.932,2.045 9.216,1.258 10.759,0.888 13.022,0.888 14.499,1.258c5.175,1.296 8.709,6.045 8.42,11.313 -0.092,1.675 -0.339,2.697 -0.994,4.118 -1.252,2.715 -3.67,4.885 -6.492,5.827 -1.04,0.347 -3.123,0.709 -3.773,0.656 -0.114,-0.009 -0.613,-0.065 -1.11,-0.123zM14.072,22.517c3.782,-0.782 6.777,-3.5 8.07,-7.326 0.223,-0.659 0.322,-1.358 0.375,-2.638C22.612,10.307 22.375,9.152 21.424,7.211 20.326,4.971 18.38,3.128 16.1,2.169 12.729,0.75 8.965,1.079 5.927,3.058 4.821,3.779 3.21,5.477 2.517,6.653 1.431,8.495 0.887,11.125 1.157,13.226c0.821,6.4 6.643,10.588 12.916,9.291zM10.937,17.122c-0.755,-0.132 -2.173,-0.807 -2.282,-1.087 -0.092,-0.235 0.375,-2.775 0.51,-2.775 0.054,0 0.303,0.365 0.554,0.811 0.399,0.709 1.306,1.617 2.736,2.739 0.12,0.094 0.192,0.197 0.159,0.229 -0.143,0.141 -1.08,0.187 -1.677,0.082zM13.383,16.685c-0.076,-0.081 -0.541,-0.51 -1.034,-0.954l-0.897,-0.806 0.977,-0.005c0.784,-0.004 1.285,-0.115 2.536,-0.561 0.857,-0.306 1.587,-0.528 1.621,-0.494 0.113,0.113 -0.385,1.012 -0.883,1.594 -0.456,0.533 -1.729,1.392 -2.044,1.379 -0.076,-0.003 -0.2,-0.072 -0.276,-0.153zM7.487,14.806c-0.504,-0.762 -0.816,-1.928 -0.766,-2.865l0.042,-0.786 1.31,-0.46c0.721,-0.253 1.326,-0.462 1.345,-0.465 0.127,-0.018 -0.03,0.367 -0.432,1.057 -0.345,0.593 -0.529,1.159 -0.71,2.18 -0.351,1.99 -0.354,1.996 -0.789,1.339zM14.141,13.753c0,-0.032 0.228,-0.442 0.507,-0.91 0.394,-0.662 0.57,-1.187 0.793,-2.362 0.157,-0.831 0.348,-1.519 0.424,-1.529 0.076,-0.01 0.348,0.396 0.604,0.902 0.355,0.7 0.48,1.143 0.524,1.853 0.032,0.513 0.008,0.999 -0.053,1.08 -0.061,0.081 -0.682,0.345 -1.38,0.586 -1.3,0.45 -1.421,0.482 -1.421,0.38zM14.003,10.066C13.721,9.576 13.153,8.908 12.632,8.452 12.143,8.024 11.553,7.501 11.321,7.289L10.9,6.904 12.076,6.944c1.005,0.035 1.31,0.107 2.103,0.497 0.51,0.251 0.928,0.531 0.928,0.621 0.001,0.337 -0.449,2.65 -0.533,2.743 -0.048,0.053 -0.305,-0.28 -0.57,-0.739zM7.33,9.531c0.439,-0.807 1.298,-1.644 2.116,-2.061l0.573,-0.292 1.112,0.938 1.112,0.938 -1.155,0.086c-0.828,0.062 -1.537,0.228 -2.505,0.586 -0.743,0.275 -1.414,0.5 -1.491,0.5 -0.078,0 0.029,-0.313 0.237,-0.695z"
++        android:fillColor="#ffffff"
++        android:strokeWidth="0.13793103"/>
++</vector>
+\ No newline at end of file
+diff --git a/res/drawable/ic_settings_hdr_auto.xml b/res/drawable/ic_settings_hdr_auto.xml
+index 9acbe86..6085bc8 100644
+--- a/res/drawable/ic_settings_hdr_auto.xml
++++ b/res/drawable/ic_settings_hdr_auto.xml
+@@ -1,24 +1,30 @@
+-<?xml version="1.0" encoding="utf-8"?>
+ <vector xmlns:android="http://schemas.android.com/apk/res/android"
+-    android:width="24dp"
+-    android:height="24dp"
+-    android:viewportWidth="24"
+-    android:viewportHeight="24">
+-
++        android:width="24dp"
++        android:height="24dp"
++        android:viewportWidth="24.0"
++        android:viewportHeight="24.0">
+     <path
+-        android:pathData="M0 0h24v24H0V0z" />
++        android:pathData="m6.199,10.003h-2L4.199,6.003h-2v10h2v-4h2v4h2L8.199,6.003h-2zM13.199,6.003L9.199,6.003v10h4c1.105,0 2,-0.895 2,-2L15.199,8.003c0,-1.105 -0.895,-2 -2,-2zM13.199,14.003h-2L11.199,8.003h2zM22.199,10.003L22.199,8.003c0,-1.105 -0.895,-2 -2,-2h-4v10h2v-4h1l1,4h2l-1.19,-4.175c0.7,-0.31 1.19,-1.01 1.19,-1.825zM20.199,10.003h-2L18.199,8.003h2z"
++        android:fillColor="#ffffff"
++        android:strokeWidth="0.5"/>
+     <path
+-        android:fillColor="@color/white"
+-        android:pathData="M 19.473737,11.523243 v -1 c 0,-0.8000003 -0.7,-1.5000003 -1.5,-1.5000003 h -3.5
+-v 6.0000003 h 1.5 v -2 h 1.1 l 0.9,2 h 1.5 l -0.9,-2.1 c 0.5,-0.3 0.9,-0.8
+-0.9,-1.4 z m -1.5,0 h -2 v -1 h 2 v 1 z m -12.9999999,-0.5 h -2 V 9.0232427 h
+--1.5 v 6.0000003 h 1.5 v -2.5 h 2 v 2.5 h 1.5 V 9.0232427 h -1.5 V 11.023243 z M
+-11.473737,9.0232427 H 7.9737371 v 6.0000003 h 3.4999999 c 0.8,0 1.5,-0.7
+-1.5,-1.5 v -3 c 0,-0.8000003 -0.7,-1.5000003 -1.5,-1.5000003 z m 0,4.5000003 H
+-9.4737372 v -3 h 1.9999998 v 3 z" />
++        android:pathData="m8.593,21.13 l-0.213,-0.8L7.121,20.33l-0.229,0.8L6.273,21.13l1.029,-3.733h0.923l1.029,3.733zM7.756,17.972 L7.26,19.796h0.971z"
++        android:fillAlpha="1"
++        android:strokeColor="#00000000"
++        android:fillColor="#ffffff"/>
+     <path
+-        android:fillColor="@color/white"
+-        android:pathData="M 22.210669,14.370909 l -1.174317,0 -0.205078,0.664062 -0.915527,0
+-1.303711,-3.554687 0.805664,0 1.313476,3.554687 -0.92041,0 -0.207519,-0.664062 m
+--0.969239,-0.661621 0.76416,0 -0.3833,-1.232911 -0.38086,1.232911" />
+-</vector>
++        android:pathData="m11.238,21.156q-1.376,0 -1.376,-1.264v-2.496h0.629v2.453q0,0.443 0.187,0.608 0.192,0.165 0.56,0.165 0.368,0 0.56,-0.165 0.192,-0.165 0.192,-0.608v-2.453h0.629v2.496q0,0.597 -0.368,0.933 -0.368,0.331 -1.013,0.331z"
++        android:fillAlpha="1"
++        android:strokeColor="#00000000"
++        android:fillColor="#ffffff"/>
++    <path
++        android:pathData="m14.654,17.93v3.2h-0.629v-3.2h-0.917v-0.533h2.448v0.533z"
++        android:fillAlpha="1"
++        android:strokeColor="#00000000"
++        android:fillColor="#ffffff"/>
++    <path
++        android:pathData="m18.138,20.996q-0.293,0.16 -0.677,0.16 -0.384,0 -0.677,-0.16 -0.293,-0.165 -0.469,-0.448 -0.171,-0.283 -0.261,-0.624 -0.085,-0.347 -0.085,-0.741 0,-0.357 0.085,-0.677 0.091,-0.325 0.261,-0.597 0.176,-0.272 0.469,-0.432 0.299,-0.165 0.677,-0.165 0.379,0 0.672,0.165 0.299,0.16 0.469,0.432 0.176,0.272 0.261,0.597 0.091,0.32 0.091,0.677 0,0.395 -0.091,0.741 -0.085,0.341 -0.261,0.624 -0.171,0.283 -0.464,0.448zM18.106,18.244q-0.219,-0.4 -0.645,-0.4 -0.427,0 -0.645,0.4 -0.219,0.4 -0.219,0.939 0,0.352 0.08,0.667 0.085,0.315 0.288,0.544 0.208,0.229 0.496,0.229 0.288,0 0.491,-0.229 0.208,-0.229 0.288,-0.544 0.085,-0.315 0.085,-0.667 0,-0.539 -0.219,-0.939z"
++        android:fillAlpha="1"
++        android:strokeColor="#00000000"
++        android:fillColor="#ffffff"/>
++</vector>
+\ No newline at end of file
+diff --git a/res/values-af/strings.xml b/res/values-af/strings.xml
+index 124dce8..de9af70 100644
+--- a/res/values-af/strings.xml
++++ b/res/values-af/strings.xml
+@@ -258,7 +258,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ AAN</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -323,7 +323,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">VOORSTE KAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-as-rIN/strings.xml b/res/values-as-rIN/strings.xml
+index 9af5496..cd31ef8 100644
+--- a/res/values-as-rIN/strings.xml
++++ b/res/values-as-rIN/strings.xml
+@@ -252,7 +252,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ অন</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -308,7 +308,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">সন্মুখৰ কেমেৰা</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-be/strings.xml b/res/values-be/strings.xml
+index 5ec3fdb..9294210 100644
+--- a/res/values-be/strings.xml
++++ b/res/values-be/strings.xml
+@@ -234,7 +234,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">УКЛЮЧЫЦЬ HDR+</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -290,7 +290,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ПЯРЭДНЯЯ КАМЕРА</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-bg/strings.xml b/res/values-bg/strings.xml
+index d587828..f71a417 100644
+--- a/res/values-bg/strings.xml
++++ b/res/values-bg/strings.xml
+@@ -258,7 +258,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">ВКЛЮЧВАНЕ НА HDR+</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -323,7 +323,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ПРЕДНА КАМЕРА</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-ca/strings.xml b/res/values-ca/strings.xml
+index 9dfad7d..49e2dae 100644
+--- a/res/values-ca/strings.xml
++++ b/res/values-ca/strings.xml
+@@ -258,7 +258,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ACTIVAT</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -323,7 +323,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">CÀMERA FRONTAL</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-cs/strings.xml b/res/values-cs/strings.xml
+index d227928..619e7f1 100644
+--- a/res/values-cs/strings.xml
++++ b/res/values-cs/strings.xml
+@@ -238,7 +238,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ZAPNUTO</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -303,7 +303,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">PŘEDNÍ FOTOAPARÁT</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-da/strings.xml b/res/values-da/strings.xml
+index 65d70df..3d255de 100644
+--- a/res/values-da/strings.xml
++++ b/res/values-da/strings.xml
+@@ -259,7 +259,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ TIL</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -324,7 +324,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">FRONTKAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-de/strings.xml b/res/values-de/strings.xml
+index 28f2e42..e6d9091 100644
+--- a/res/values-de/strings.xml
++++ b/res/values-de/strings.xml
+@@ -258,7 +258,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ AN</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -323,7 +323,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">FRONTKAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-el/strings.xml b/res/values-el/strings.xml
+index 4bb2ccb..5004785 100644
+--- a/res/values-el/strings.xml
++++ b/res/values-el/strings.xml
+@@ -258,7 +258,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">ΕΝΕΡΓΟΠΟΙΗΣΗ HDR+</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -323,7 +323,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ΜΠΡΟΣΤΑ</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-en-rAU/strings.xml b/res/values-en-rAU/strings.xml
+index af29fb2..3100506 100644
+--- a/res/values-en-rAU/strings.xml
++++ b/res/values-en-rAU/strings.xml
+@@ -260,7 +260,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ON</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -325,7 +325,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">FRONT CAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-en-rGB/strings.xml b/res/values-en-rGB/strings.xml
+index 573251b..0cf8b48 100644
+--- a/res/values-en-rGB/strings.xml
++++ b/res/values-en-rGB/strings.xml
+@@ -260,7 +260,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ON</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -325,7 +325,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">FRONT CAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-en-rIN/strings.xml b/res/values-en-rIN/strings.xml
+index 445c9d9..6a8ddee 100644
+--- a/res/values-en-rIN/strings.xml
++++ b/res/values-en-rIN/strings.xml
+@@ -260,7 +260,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ON</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -325,7 +325,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">FRONT CAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-es-rMX/strings.xml b/res/values-es-rMX/strings.xml
+index b235674..bfe6a1f 100644
+--- a/res/values-es-rMX/strings.xml
++++ b/res/values-es-rMX/strings.xml
+@@ -253,7 +253,7 @@ La imagen recortada se guardó en <xliff:g id="folder_name">%s</xliff:g>.</strin
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ACTIVADO</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -309,7 +309,7 @@ La imagen recortada se guardó en <xliff:g id="folder_name">%s</xliff:g>.</strin
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">CÁMARA FRONTAL</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-es-rUS/strings.xml b/res/values-es-rUS/strings.xml
+index 68c22e2..0182795 100644
+--- a/res/values-es-rUS/strings.xml
++++ b/res/values-es-rUS/strings.xml
+@@ -259,7 +259,7 @@ La imagen recortada se guardó en <xliff:g id="folder_name">%s</xliff:g>.</strin
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ACTIVADO</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -324,7 +324,7 @@ La imagen recortada se guardó en <xliff:g id="folder_name">%s</xliff:g>.</strin
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">CÁMARA FRONTAL</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-es/strings.xml b/res/values-es/strings.xml
+index b7612e9..e5de2ae 100644
+--- a/res/values-es/strings.xml
++++ b/res/values-es/strings.xml
+@@ -259,7 +259,7 @@ La imagen recortada se ha guardado en <xliff:g id="folder_name">%s</xliff:g>.</s
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ACTIVADO</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+diff --git a/res/values-et/strings.xml b/res/values-et/strings.xml
+index 550491e..3662e4e 100644
+--- a/res/values-et/strings.xml
++++ b/res/values-et/strings.xml
+@@ -252,7 +252,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ON SEES</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -308,7 +308,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ESIKAAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-eu/strings.xml b/res/values-eu/strings.xml
+index 7a195d9..092dc47 100644
+--- a/res/values-eu/strings.xml
++++ b/res/values-eu/strings.xml
+@@ -260,7 +260,7 @@ Elementua gailuan gorde da eta konexiorik gabe erabili daiteke.</string>
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ BAI</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -325,7 +325,7 @@ Elementua gailuan gorde da eta konexiorik gabe erabili daiteke.</string>
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">AURREKO KAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-fi/strings.xml b/res/values-fi/strings.xml
+index 125dfc4..d8449cb 100644
+--- a/res/values-fi/strings.xml
++++ b/res/values-fi/strings.xml
+@@ -260,7 +260,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ KÄYTÖSSÄ</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -325,7 +325,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ETUKAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-fr/strings.xml b/res/values-fr/strings.xml
+index 4e4bb2f..7983f2f 100644
+--- a/res/values-fr/strings.xml
++++ b/res/values-fr/strings.xml
+@@ -258,7 +258,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ACTIVÉ</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -323,7 +323,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">CAMÉRA FRONTALE</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-gl/strings.xml b/res/values-gl/strings.xml
+index 9ab27ac..3987abc 100644
+--- a/res/values-gl/strings.xml
++++ b/res/values-gl/strings.xml
+@@ -260,7 +260,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ACTIVADO</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -325,7 +325,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">CÁMARA FRONTAL</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-gu/strings.xml b/res/values-gu/strings.xml
+index 1ce3e8d..e958ec1 100644
+--- a/res/values-gu/strings.xml
++++ b/res/values-gu/strings.xml
+@@ -252,7 +252,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+  ચાલુ</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -308,7 +308,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ફ્રન્ટ કેમેરા</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-hu/strings.xml b/res/values-hu/strings.xml
+index b3bf8dc..a8ff184 100644
+--- a/res/values-hu/strings.xml
++++ b/res/values-hu/strings.xml
+@@ -259,7 +259,7 @@ Az elem helyileg van tárolva, és elérhető offline módban.</string>
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ BEKAPCSOLVA</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -324,7 +324,7 @@ Az elem helyileg van tárolva, és elérhető offline módban.</string>
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ELÜLSŐ KAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-in/strings.xml b/res/values-in/strings.xml
+index 599a5f5..a64b0fc 100644
+--- a/res/values-in/strings.xml
++++ b/res/values-in/strings.xml
+@@ -254,7 +254,7 @@ Gambar yang dipotong disimpan ke <xliff:g id="folder_name">%s</xliff:g>.</string
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ HIDUP</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -319,7 +319,7 @@ Gambar yang dipotong disimpan ke <xliff:g id="folder_name">%s</xliff:g>.</string
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">KAMERA DEPAN</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-it/strings.xml b/res/values-it/strings.xml
+index 480a3d6..fdecf98 100644
+--- a/res/values-it/strings.xml
++++ b/res/values-it/strings.xml
+@@ -258,7 +258,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ATTIVO</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -323,7 +323,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">FOTOCAMERA ANTERIORE</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-iw/strings.xml b/res/values-iw/strings.xml
+index 7fc6f15..926cecc 100644
+--- a/res/values-iw/strings.xml
++++ b/res/values-iw/strings.xml
+@@ -268,7 +268,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+‎</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">‏HDR+‎ פועל</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -333,7 +333,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">מצלמה קדמית</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-ja/strings.xml b/res/values-ja/strings.xml
+index dcd82b4..0a1867f 100644
+--- a/res/values-ja/strings.xml
++++ b/res/values-ja/strings.xml
+@@ -253,7 +253,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ON</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -318,7 +318,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">前面カメラ</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-kn/strings.xml b/res/values-kn/strings.xml
+index abdec80..f8d3bec 100644
+--- a/res/values-kn/strings.xml
++++ b/res/values-kn/strings.xml
+@@ -252,7 +252,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ಆನ್‌</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -308,7 +308,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ಮುಂಭಾಗದ ಕ್ಯಾಮೆರಾ</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-ko/strings.xml b/res/values-ko/strings.xml
+index d559d6e..5037b17 100644
+--- a/res/values-ko/strings.xml
++++ b/res/values-ko/strings.xml
+@@ -255,7 +255,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ 사용</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -320,7 +320,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">전면 카메라</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-lb/strings.xml b/res/values-lb/strings.xml
+index 3afd37a..226b73b 100644
+--- a/res/values-lb/strings.xml
++++ b/res/values-lb/strings.xml
+@@ -252,7 +252,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ UN</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -308,7 +308,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">VIISCHT KAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-ml/strings.xml b/res/values-ml/strings.xml
+index c7618a5..bf54058 100644
+--- a/res/values-ml/strings.xml
++++ b/res/values-ml/strings.xml
+@@ -252,7 +252,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ഓണ്‍</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -308,7 +308,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">മുന്നിലെ ക്യാമറ</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-mr/strings.xml b/res/values-mr/strings.xml
+index 33a8ad4..27edafb 100644
+--- a/res/values-mr/strings.xml
++++ b/res/values-mr/strings.xml
+@@ -252,7 +252,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ चालू</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -308,7 +308,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">पुढील कॅमेरा</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-nb/strings.xml b/res/values-nb/strings.xml
+index 0e00e40..0e8ff0a 100644
+--- a/res/values-nb/strings.xml
++++ b/res/values-nb/strings.xml
+@@ -258,7 +258,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ PÅ</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -323,7 +323,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">FRONTKAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-nl/strings.xml b/res/values-nl/strings.xml
+index 60bfdca..b9414e7 100644
+--- a/res/values-nl/strings.xml
++++ b/res/values-nl/strings.xml
+@@ -259,7 +259,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ AAN</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -324,7 +324,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">CAMERA AAN VOORZIJDE</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-or-rIN/strings.xml b/res/values-or-rIN/strings.xml
+index 4eb772e..6d5e6b2 100644
+--- a/res/values-or-rIN/strings.xml
++++ b/res/values-or-rIN/strings.xml
+@@ -252,7 +252,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ଅନ୍‌</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -308,7 +308,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ସମ୍ମୁଖ କ୍ୟାମେରା</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-pl/strings.xml b/res/values-pl/strings.xml
+index 5a3276d..4941455 100644
+--- a/res/values-pl/strings.xml
++++ b/res/values-pl/strings.xml
+@@ -238,7 +238,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ WŁĄCZONY</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -303,7 +303,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">PRZEDNI APARAT</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-pt-rBR/strings.xml b/res/values-pt-rBR/strings.xml
+index ee6184f..ec96862 100644
+--- a/res/values-pt-rBR/strings.xml
++++ b/res/values-pt-rBR/strings.xml
+@@ -258,7 +258,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ATIVADO</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -323,7 +323,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">CÂMERA FRONTAL</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-pt-rPT/strings.xml b/res/values-pt-rPT/strings.xml
+index 83c4142..4d5cc14 100644
+--- a/res/values-pt-rPT/strings.xml
++++ b/res/values-pt-rPT/strings.xml
+@@ -258,7 +258,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ATIVADO</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -323,7 +323,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">CÂMARA FRONTAL</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-ro/strings.xml b/res/values-ro/strings.xml
+index c1b55e7..100a5a4 100644
+--- a/res/values-ro/strings.xml
++++ b/res/values-ro/strings.xml
+@@ -265,7 +265,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ACTIVAT</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -330,7 +330,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">CAMERA FRONTALĂ</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-ru/strings.xml b/res/values-ru/strings.xml
+index ce126d7..e1dc6dd 100644
+--- a/res/values-ru/strings.xml
++++ b/res/values-ru/strings.xml
+@@ -270,7 +270,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">ВКЛЮЧИТЬ HDR+</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -335,7 +335,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ПЕРЕДНЯЯ КАМЕРА</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-sk/strings.xml b/res/values-sk/strings.xml
+index b8b5224..ada770f 100644
+--- a/res/values-sk/strings.xml
++++ b/res/values-sk/strings.xml
+@@ -268,7 +268,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ZAPNUTÉ</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -333,7 +333,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">PREDNÝ FOTOAPARÁT</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-sl/strings.xml b/res/values-sl/strings.xml
+index 9f68ae2..9ce3e02 100644
+--- a/res/values-sl/strings.xml
++++ b/res/values-sl/strings.xml
+@@ -270,7 +270,7 @@ Predmet je shranjen lokalno in na voljo brez povezave.</string>
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ VKLOPLJEN</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -335,7 +335,7 @@ Predmet je shranjen lokalno in na voljo brez povezave.</string>
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">FOTOAPARAT SPREDAJ</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-sq/strings.xml b/res/values-sq/strings.xml
+index 0ec5d4f..4f7b46a 100644
+--- a/res/values-sq/strings.xml
++++ b/res/values-sq/strings.xml
+@@ -193,7 +193,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ AKTIV</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -250,7 +250,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">KAMERA PARËSORE</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-sr/strings.xml b/res/values-sr/strings.xml
+index 374ecf7..d9e4be2 100644
+--- a/res/values-sr/strings.xml
++++ b/res/values-sr/strings.xml
+@@ -264,7 +264,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ УКЉУЧЕН</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -329,7 +329,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ПРЕДЊА КАМЕРА</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-sv/strings.xml b/res/values-sv/strings.xml
+index f2b0358..31cf407 100644
+--- a/res/values-sv/strings.xml
++++ b/res/values-sv/strings.xml
+@@ -258,7 +258,7 @@ Den beskurna bilden har sparats i <xliff:g id="folder_name">%s</xliff:g>.</strin
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ PÅ</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -314,7 +314,7 @@ Den beskurna bilden har sparats i <xliff:g id="folder_name">%s</xliff:g>.</strin
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">FRÄMRE KAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-ta/strings.xml b/res/values-ta/strings.xml
+index f4a66ed..8008ea5 100644
+--- a/res/values-ta/strings.xml
++++ b/res/values-ta/strings.xml
+@@ -252,7 +252,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ஆன்</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -308,7 +308,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">முன்பக்க கேமரா</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-te/strings.xml b/res/values-te/strings.xml
+index 727195b..bee71af 100644
+--- a/res/values-te/strings.xml
++++ b/res/values-te/strings.xml
+@@ -252,7 +252,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ON</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -308,7 +308,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ముందు కెమెరా</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-th/strings.xml b/res/values-th/strings.xml
+index 9365452..09ea68e 100644
+--- a/res/values-th/strings.xml
++++ b/res/values-th/strings.xml
+@@ -248,7 +248,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">เปิด HDR+</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -304,7 +304,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">กล้องด้านหน้า</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-tr/strings.xml b/res/values-tr/strings.xml
+index 1a8c82a..5179d7d 100644
+--- a/res/values-tr/strings.xml
++++ b/res/values-tr/strings.xml
+@@ -259,7 +259,7 @@ Kesilen resim <xliff:g id="folder_name">%s</xliff:g> klasörüne kaydedildi.</st
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ AÇIK</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -324,7 +324,7 @@ Kesilen resim <xliff:g id="folder_name">%s</xliff:g> klasörüne kaydedildi.</st
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ÖN KAMERA</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-ug/strings.xml b/res/values-ug/strings.xml
+index bb1e34f..0b4c76f 100644
+--- a/res/values-ug/strings.xml
++++ b/res/values-ug/strings.xml
+@@ -232,7 +232,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ نى ئېچىڭ</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -288,7 +288,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ئالدى كامېرا</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-uk/strings.xml b/res/values-uk/strings.xml
+index 0294fdb..2024222 100644
+--- a/res/values-uk/strings.xml
++++ b/res/values-uk/strings.xml
+@@ -240,7 +240,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ УВІМКНЕНО</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -305,7 +305,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">ПЕРЕДНЯ КАМЕРА</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-vi/strings.xml b/res/values-vi/strings.xml
+index affc390..f1f530e 100644
+--- a/res/values-vi/strings.xml
++++ b/res/values-vi/strings.xml
+@@ -254,7 +254,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">BẬT HDR+</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -319,7 +319,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">MÁY ẢNH MẶT TRƯỚC</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-zh-rCN/strings.xml b/res/values-zh-rCN/strings.xml
+index 8e50be3..93f0504 100644
+--- a/res/values-zh-rCN/strings.xml
++++ b/res/values-zh-rCN/strings.xml
+@@ -254,7 +254,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">开启 HDR+</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -319,7 +319,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">前置摄像头</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values-zh-rTW/strings.xml b/res/values-zh-rTW/strings.xml
+index e21bffd..471bd5f 100644
+--- a/res/values-zh-rTW/strings.xml
++++ b/res/values-zh-rTW/strings.xml
+@@ -253,7 +253,7 @@
+   <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+   <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+   <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-  <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++  <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+   <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+   <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ 開啟</string>
+   <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+@@ -318,7 +318,7 @@
+   <!-- Default HDR entry value -->
+   <!-- Default HDR+ entry value -->
+   <!-- HDR label ON [CHAR LIMIT=60] -->
+-  <string name="pref_camera_hdr_label">HDR</string>
++  <string name="pref_camera_hdr_label">PRO</string>
+   <!-- switch camera label back [CHAR LIMIT=60] -->
+   <string name="pref_camera_id_label_back">前置鏡頭</string>
+   <!-- switch camera label front [CHAR LIMIT=60] -->
+diff --git a/res/values/arrays.xml b/res/values/arrays.xml
+index ae0585b..80b9062 100755
+--- a/res/values/arrays.xml
++++ b/res/values/arrays.xml
+@@ -622,16 +622,19 @@
+     <string-array name="pref_camera_hdr_entries" translatable="false">
+         <item>@string/setting_off</item>
+         <item>@string/setting_on</item>
++        <item>@string/setting_auto</item>
+     </string-array>
+ 
+     <string-array name="pref_camera_hdr_labels" translatable="false">
+         <item>@string/pref_camera_scenemode_entry_turn_hdr_on</item>
+         <item>@string/pref_camera_scenemode_entry_turn_hdr_off</item>
++        <item>@string/pref_camera_scenemode_entry_turn_hdr_auto</item>
+     </string-array>
+ 
+     <string-array name="pref_camera_hdr_icons" translatable="false">
+         <item>@drawable/ic_hdr_off</item>
+-        <item>@drawable/ic_hdr</item>
++        <item>@drawable/ic_hdr_on</item>
++        <item>@drawable/ic_settings_hdr_auto</item>
+     </string-array>
+ 
+     <string-array name="pref_camera_bokeh_icons" translatable="false">
+@@ -642,6 +645,7 @@
+     <string-array name="pref_camera_hdr_entryvalues" translatable="false">
+         <item>@string/setting_off_value</item>
+         <item>@string/setting_on_value</item>
++        <item>@string/setting_auto_value</item>
+     </string-array>
+ 
+     <string-array name="pref_camera_timer_sound_entries" translatable="false">
+diff --git a/res/values/strings.xml b/res/values/strings.xml
+index 45f5c97..cb03838 100644
+--- a/res/values/strings.xml
++++ b/res/values/strings.xml
+@@ -235,11 +235,15 @@
+     <string name="setting_off">Off</string>
+     <!-- Entry of a on/off setting. The setting is turned on. [CHAR LIMIT=15] -->
+     <string name="setting_on">On</string>
++    <!-- Entry of a on/off/auto setting. The setting is turned auto. [CHAR LIMIT=15] -->
++    <string name="setting_auto">Auto</string>
+ 
+     <!-- The value of a camera preference indicating the setting is off. -->
+     <string name="setting_off_value" translatable="false">off</string>
+     <!-- The value of a camera preference indicating the setting is on. -->
+     <string name="setting_on_value" translatable="false">on</string>
++    <!-- The value of a camera preference indicating the setting is auto. -->
++    <string name="setting_auto_value" translatable="false">auto</string>
+ 
+     <!-- The Video quality settings in preference [CHAR LIMIT=21] -->
+     <string name="pref_video_quality_title">Video quality</string>
+@@ -346,11 +350,13 @@
+     <!-- Scene mode that uses HDR plus (better HDR) [CHAR LIMIT=16] -->
+     <string name="pref_camera_scenemode_entry_hdr_plus">HDR+</string>
+     <!-- Scene mode that uses HDR (high dynamic range) [CHAR LIMIT=16] -->
+-    <string name="pref_camera_scenemode_entry_hdr">HDR</string>
++    <string name="pref_camera_scenemode_entry_hdr">PRO</string>
+     <!-- Scene mode to turn on HDR (better high dynamic range) [CHAR LIMIT=50] -->
+     <string name="pref_camera_scenemode_entry_turn_hdr_plus_on">HDR+ ON</string>
+     <!-- Scene mode to turn off HDR (better high dynamic range) [CHAR LIMIT=50] -->
+     <string name="pref_camera_scenemode_entry_turn_hdr_plus_off">HDR+ OFF</string>
++    <!-- Scene mode to turn auto HDR (high dynamic range) [CHAR LIMIT=50] -->
++    <string name="pref_camera_scenemode_entry_turn_hdr_auto">HDR AUTO</string>
+     <!-- Scene mode to turn on HDR (high dynamic range) [CHAR LIMIT=50] -->
+     <string name="pref_camera_scenemode_entry_turn_hdr_on">HDR ON</string>
+     <!-- Scene mode to turn off HDR (high dynamic range) [CHAR LIMIT=50] -->
+@@ -433,7 +439,7 @@
+     <string name="pref_camera_hdr_plus_default">@string/setting_off_value</string>
+ 
+     <!-- HDR label ON [CHAR LIMIT=60] -->
+-    <string name="pref_camera_hdr_label">HDR</string>
++    <string name="pref_camera_hdr_label">PRO</string>
+ 
+     <!-- switch camera label back [CHAR LIMIT=60] -->
+     <string name="pref_camera_id_label_back">FRONT CAMERA</string>
+diff --git a/src/com/android/camera/CameraSettings.java b/src/com/android/camera/CameraSettings.java
+index 0ec6960..2db616b 100644
+--- a/src/com/android/camera/CameraSettings.java
++++ b/src/com/android/camera/CameraSettings.java
+@@ -189,12 +189,20 @@ public class CameraSettings {
+     public static final String KEY_QC_INSTANT_CAPTURE = "instant-capture";
+     public static final String KEY_QC_INSTANT_CAPTURE_VALUES = "instant-capture-values";
+ 
++//  Added for Samsung
++    private static final String KEY_SUPPORTED_RT_HDR = "rt-hdr-values";
++
+     public static final String KEY_CURRENT_SATURATION = "saturation";
+     public static final String KEY_MIN_SATURATION = "saturation-min";
+     public static final String KEY_MAX_SATURATION = "saturation-max";
+     public static final String KEY_CURRENT_SHARPNESS = "sharpness";
+     public static final String KEY_MIN_SHARPNESS = "sharpness-min";
+     public static final String KEY_MAX_SHARPNESS = "sharpness-max";
++    public static final String KEY_RT_HDR = "rt-hdr";
++
++    public static final String RTHDR_ON = "on";
++    public static final String RTHDR_OFF = "off";
++    public static final String RTHDR_AUTO = "auto";
+ 
+     public static final String KEY_LUMINANCE_CONITION = "luminance-condition";
+     public static final String LUMINANCE_CONITION_LOW = "low";
+@@ -575,6 +583,14 @@ public class CameraSettings {
+         return split(str);
+     }
+ 
++    public static List<String> getSupportedRealtimeHDRModes(Parameters params) {
++        String str = params.get(KEY_SUPPORTED_RT_HDR);
++        if (str == null) {
++            return null;
++        }
++        return split(str);
++    }
++
+     public static List<String> getSupportedDISModes(Parameters params) {
+         String str = params.get(KEY_QC_SUPPORTED_DIS_MODES);
+         if (str == null) {
+@@ -1163,6 +1179,14 @@ public class CameraSettings {
+             filterUnsupportedOptions(group,
+                     flashMode, mParameters.getSupportedFlashModes());
+         }
++        if (cameraHdr != null) {
++            if (getSupportedRealtimeHDRModes(mParameters) != null) {
++                filterUnsupportedOptions(group,
++                    cameraHdr, getSupportedRealtimeHDRModes(mParameters));
++            } else {
++                removePreference(group, cameraHdr.getKey());
++            }
++        }
+         if (disMode != null) {
+             filterUnsupportedOptions(group,
+                     disMode, getSupportedDISModes(mParameters));
+diff --git a/src/com/android/camera/PhotoMenu.java b/src/com/android/camera/PhotoMenu.java
+index 7c88a4f..4671290 100644
+--- a/src/com/android/camera/PhotoMenu.java
++++ b/src/com/android/camera/PhotoMenu.java
+@@ -176,12 +176,8 @@ public class PhotoMenu extends MenuController
+         mFrontBackSwitcher.setVisibility(View.INVISIBLE);
+         if(!TsMakeupManager.HAS_TS_MAKEUP) {
+             // HDR.
+-            if (group.findPreference(CameraSettings.KEY_CAMERA_HDR) != null) {
+-                mHdrSwitcher.setVisibility(View.VISIBLE);
+-                initSwitchItem(CameraSettings.KEY_CAMERA_HDR, mHdrSwitcher);
+-            } else {
+-                mHdrSwitcher.setVisibility(View.INVISIBLE);
+-            }
++            mHdrSwitcher.setVisibility(View.VISIBLE);
++            initSwitchItem(CameraSettings.KEY_CAMERA_HDR, mHdrSwitcher);
+         }
+ 
+         mOtherKeys1 = new String[] {
+@@ -1473,34 +1469,7 @@ public class PhotoMenu extends MenuController
+     public void onSettingChanged(ListPreference pref) {
+         // Reset the scene mode if HDR is set to on. Reset HDR if scene mode is
+         // set to non-auto.
+-        if (same(pref, CameraSettings.KEY_SCENE_MODE, Parameters.SCENE_MODE_HDR)) {
+-            ListPreference hdrPref =
+-                    mPreferenceGroup.findPreference(CameraSettings.KEY_CAMERA_HDR);
+-            if (hdrPref != null && same(hdrPref, CameraSettings.KEY_CAMERA_HDR, mSettingOff)) {
+-                setPreference(CameraSettings.KEY_CAMERA_HDR, mSettingOn);
+-            }
+-        } else if (notSame(pref, CameraSettings.KEY_SCENE_MODE, Parameters.SCENE_MODE_HDR)) {
+-            ListPreference hdrPref =
+-                    mPreferenceGroup.findPreference(CameraSettings.KEY_CAMERA_HDR);
+-            if (hdrPref != null && notSame(hdrPref, CameraSettings.KEY_CAMERA_HDR, mSettingOff)) {
+-                setPreference(CameraSettings.KEY_CAMERA_HDR, mSettingOff);
+-            }
+-        } else if (same(pref, CameraSettings.KEY_CAMERA_HDR, mSettingOff)) {
+-            ListPreference scenePref =
+-                    mPreferenceGroup.findPreference(CameraSettings.KEY_SCENE_MODE);
+-            if (scenePref != null && notSame(scenePref, CameraSettings.KEY_SCENE_MODE, Parameters.SCENE_MODE_AUTO)) {
+-                setPreference(CameraSettings.KEY_SCENE_MODE, Parameters.SCENE_MODE_AUTO);
+-            }
+-            updateSceneModeIcon((IconListPreference) scenePref);
+-            updateFilterModeIcon(scenePref, pref);
+-        } else if (same(pref, CameraSettings.KEY_CAMERA_HDR, mSettingOn)) {
+-            ListPreference scenePref =
+-                    mPreferenceGroup.findPreference(CameraSettings.KEY_SCENE_MODE);
+-            if (scenePref != null && notSame(scenePref, CameraSettings.KEY_SCENE_MODE, Parameters.SCENE_MODE_HDR)) {
+-                setPreference(CameraSettings.KEY_SCENE_MODE, Parameters.SCENE_MODE_HDR);
+-            }
+-            updateSceneModeIcon((IconListPreference) scenePref);
+-        } else if (notSame(pref,CameraSettings.KEY_AE_BRACKET_HDR,"Off")) {
++        if (notSame(pref,CameraSettings.KEY_AE_BRACKET_HDR,"Off")) {
+             RotateTextToast.makeText(mActivity,
+                            R.string.flash_aebracket_message,Toast.LENGTH_SHORT).show();
+             setPreference(CameraSettings.KEY_FLASH_MODE,Parameters.FLASH_MODE_OFF);
+diff --git a/src/com/android/camera/PhotoModule.java b/src/com/android/camera/PhotoModule.java
+index eb20be7..c40c67a 100644
+--- a/src/com/android/camera/PhotoModule.java
++++ b/src/com/android/camera/PhotoModule.java
+@@ -4267,44 +4267,25 @@ public class PhotoModule
+         // Since changing scene mode may change supported values, set scene mode
+         // first. HDR is a scene mode. To promote it in UI, it is stored in a
+         // separate preference.
++        String offValue = mActivity.getString(R.string.setting_off_value);
+         String onValue = mActivity.getString(R.string.setting_on_value);
++        String autoValue = mActivity.getString(R.string.setting_auto_value);
+         String hdr = mPreferences.getString(CameraSettings.KEY_CAMERA_HDR,
+                 mActivity.getString(R.string.pref_camera_hdr_default));
+         String hdrPlus = mPreferences.getString(CameraSettings.KEY_CAMERA_HDR_PLUS,
+                 mActivity.getString(R.string.pref_camera_hdr_plus_default));
+-        boolean hdrOn = onValue.equals(hdr);
+         boolean hdrPlusOn = onValue.equals(hdrPlus);
+         boolean doGcamModeSwitch = false;
+ 
+-        if (hdrPlusOn && GcamHelper.hasGcamCapture()) {
+-            // Kick off mode switch to gcam.
+-            doGcamModeSwitch = true;
+-        } else {
+-            if (hdrOn) {
+-                mSceneMode = CameraUtil.SCENE_MODE_HDR;
+-                if (!(Parameters.SCENE_MODE_AUTO).equals(mParameters.getSceneMode())
+-                    && !(Parameters.SCENE_MODE_HDR).equals(mParameters.getSceneMode())) {
+-                    mParameters.setSceneMode(Parameters.SCENE_MODE_AUTO);
+-                    mCameraDevice.setParameters(mParameters);
+-                    mParameters = mCameraDevice.getParameters();
+-                }
+-                if (mLgeHdrMode) {
+-                    mParameters.set(CameraSettings.KEY_SNAPCAM_HDR_MODE, CameraSettings.LGE_HDR_MODE_ON);
+-                    // Force enable ZSL mode for LG HDR
+-                    try {
+-                        mUI.setPreference(CameraSettings.KEY_ZSL, Parameters.ZSL_ON);
+-                    } catch (NullPointerException e) {
+-                    }
+-                }
+-            } else {
+-                if (mLgeHdrMode) {
+-                    mParameters.set(CameraSettings.KEY_SNAPCAM_HDR_MODE, CameraSettings.LGE_HDR_MODE_OFF);
+-                }
+-                mSceneMode = mPreferences.getString(
+-                        CameraSettings.KEY_SCENE_MODE,
+-                        mActivity.getString(R.string.pref_camera_scenemode_default));
+-            }
++        if (offValue.equals(hdr)) {
++            mParameters.set(CameraSettings.KEY_RT_HDR, CameraSettings.RTHDR_OFF);
++        } else if (onValue.equals(hdr)) {
++            mParameters.set(CameraSettings.KEY_RT_HDR, CameraSettings.RTHDR_ON);
++        } else if (autoValue.equals(hdr)) {
++            mParameters.set(CameraSettings.KEY_RT_HDR, CameraSettings.RTHDR_AUTO);
+         }
++        mCameraDevice.setParameters(mParameters);
++        mParameters = mCameraDevice.getParameters();
+ 
+         String refocusOn = mActivity.getString(R.string
+                 .pref_camera_advanced_feature_value_refocus_on);
+-- 
+2.7.4
+

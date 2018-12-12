@@ -1,0 +1,37 @@
+From 0fdcae8884652fbd2a33561d13fa189b24aff41c Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Fri, 13 Jul 2018 14:47:57 +0400
+Subject: [PATCH 4/4] Remove device maintainer.
+
+Change-Id: I3fd6fe0233b41ff89348822a472f8d0ad20cedbd
+---
+ res/xml/about_rom.xml | 13 -------------
+ 1 file changed, 13 deletions(-)
+
+diff --git a/res/xml/about_rom.xml b/res/xml/about_rom.xml
+index 14d2bed..c92f0cf 100644
+--- a/res/xml/about_rom.xml
++++ b/res/xml/about_rom.xml
+@@ -108,19 +108,6 @@
+         </PreferenceCategory>
+ 
+         <PreferenceCategory
+-            android:key="maintainer_categorie"
+-            android:title="@string/maintainer_categorie_title">
+-
+-        <PreferenceScreen
+-            android:key="maintainers"
+-            android:icon="@drawable/rr_maintainers_icon"
+-            android:fragment="com.android.settings.rr.DeviceMaintainersFragment"
+-            android:summary="@string/device_maintainers_title_summary"
+-            android:title="@string/device_maintainers_title" />
+-                 	
+-        </PreferenceCategory>
+-
+-        <PreferenceCategory
+             android:key="devs"
+             android:title="@string/dev_categorie_title">
+ 
+-- 
+2.7.4
+

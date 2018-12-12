@@ -1,0 +1,166 @@
+From 6e32420bb9d0dcc9c7d0556d1fcf349ad5a1fe97 Mon Sep 17 00:00:00 2001
+From: kufikugel <kufikugel@googlemail.com>
+Date: Thu, 26 Oct 2017 16:50:32 +0530
+Subject: [PATCH 1/4] Safe headset volume option (2 of 2) Add switch for Safe
+ headset volume.
+
+---
+ res/values/rr_strings.xml                      |  6 ++
+ res/xml/rr_sound_settings.xml                  |  7 +++
+ src/com/android/settings/rr/SoundFragment.java | 79 ++++++++++++++++++++++++++
+ 3 files changed, 92 insertions(+)
+
+diff --git a/res/values/rr_strings.xml b/res/values/rr_strings.xml
+index b980afc..c263b7f 100644
+--- a/res/values/rr_strings.xml
++++ b/res/values/rr_strings.xml
+@@ -1090,6 +1090,12 @@
+     <!-- Screenshot sound -->
+     <string name="screenshot_sound_title">Screenshot sound</string>
+     <string name="screenshot_sound_summary">Plays sound effect when screenshot is taken</string>
++
++    <!-- Safe headset volume restore checkbox -->
++    <string name="safe_headset_volume_title">Safe headset volume</string>
++    <string name="safe_headset_volume_summary">Prevent loud volume levels when headset is first plugged in</string>
++    <string name="safe_headset_volume_warning_dialog_text">Listening at high volume for long periods may damage your hearing. Disable it with caution.</string>
++
+     <!-- Gesture Anywhere -->
+     <string name="gesture_anywhere_title">Gesture Anywhere</string>
+     <string name="gesture_anywhere_enabled_title">Gesture Anywhere</string>
+diff --git a/res/xml/rr_sound_settings.xml b/res/xml/rr_sound_settings.xml
+index cbfa561..83a3415 100644
+--- a/res/xml/rr_sound_settings.xml
++++ b/res/xml/rr_sound_settings.xml
+@@ -27,6 +27,13 @@
+             android:entries="@array/headset_connect_player_entries"
+             android:entryValues="@array/headset_connect_player_values" />
+ 
++	<SwitchPreference
++                android:key="safe_headset_volume"
++                android:title="@string/safe_headset_volume_title"
++                android:summary="@string/safe_headset_volume_summary"
++                android:persistent="false"
++                android:defaultValue="true" />
++
+        <!-- Screenshot tone -->
+        <com.android.settings.rr.Preferences.SystemSettingSwitchPreference
+             android:key="screenshot_sound"
+diff --git a/src/com/android/settings/rr/SoundFragment.java b/src/com/android/settings/rr/SoundFragment.java
+index eb80daf..b407c5c 100644
+--- a/src/com/android/settings/rr/SoundFragment.java
++++ b/src/com/android/settings/rr/SoundFragment.java
+@@ -13,8 +13,14 @@
+ */
+ package com.android.settings.rr;
+ 
++import android.app.AlertDialog;
++import android.app.Dialog;
++import android.app.DialogFragment;
++import android.app.Fragment;
+ import android.app.Activity;
+ import android.content.Context;
++import android.content.DialogInterface;
++import android.content.DialogInterface.OnCancelListener;
+ import android.content.ContentResolver;
+ import android.content.res.Resources;
+ import android.os.Build;
+@@ -39,8 +45,12 @@ public class SoundFragment extends SettingsPreferenceFragment implements
+         Preference.OnPreferenceChangeListener {
+     private static final String TAG = "SoundFragment";
+     private static final String HEADSET_CONNECT_PLAYER = "headset_connect_player";
++    private static final int DLG_SAFE_HEADSET_VOLUME = 0;
++    private static final String KEY_SAFE_HEADSET_VOLUME = "safe_headset_volume";
++
+ 
+     private ListPreference mLaunchPlayerHeadsetConnection;
++    private SwitchPreference mSafeHeadsetVolume;
+ 
+     @Override
+     public int getMetricsCategory() {
+@@ -61,6 +71,11 @@ public class SoundFragment extends SettingsPreferenceFragment implements
+         mLaunchPlayerHeadsetConnection.setValue(Integer.toString(mLaunchPlayerHeadsetConnectionValue));
+         mLaunchPlayerHeadsetConnection.setSummary(mLaunchPlayerHeadsetConnection.getEntry());
+         mLaunchPlayerHeadsetConnection.setOnPreferenceChangeListener(this);
++
++        mSafeHeadsetVolume = (SwitchPreference) findPreference(KEY_SAFE_HEADSET_VOLUME);
++        mSafeHeadsetVolume.setChecked(Settings.System.getInt(resolver,
++				Settings.System.SAFE_HEADSET_VOLUME, 1) != 0);
++        mSafeHeadsetVolume.setOnPreferenceChangeListener(this);
+     }
+ 
+     @Override
+@@ -74,7 +89,71 @@ public class SoundFragment extends SettingsPreferenceFragment implements
+             Settings.System.putIntForUser(resolver, Settings.System.HEADSET_CONNECT_PLAYER,
+                     mLaunchPlayerHeadsetConnectionValue, UserHandle.USER_CURRENT);
+             return true;
++        } else if (preference == mSafeHeadsetVolume) {
++            if ((Boolean) newValue) {
++                    Settings.System.putInt(resolver, Settings.System.SAFE_HEADSET_VOLUME, 1);
++            } else {
++                    showDialogInner(DLG_SAFE_HEADSET_VOLUME);
++            }
++            return true;
+         }
+         return false;
+     }
++
++    private void showDialogInner(int id) {
++        DialogFragment newFragment = MyAlertDialogFragment.newInstance(id);
++        newFragment.setTargetFragment(this, 0);
++        newFragment.show(getFragmentManager(), "dialog " + id);
++    }
++
++    public static class MyAlertDialogFragment extends DialogFragment {
++
++        public static MyAlertDialogFragment newInstance(int id) {
++            MyAlertDialogFragment frag = new MyAlertDialogFragment();
++            Bundle args = new Bundle();
++            args.putInt("id", id);
++            frag.setArguments(args);
++            return frag;
++        }
++
++        SoundFragment getOwner() {
++            return (SoundFragment) getTargetFragment();
++        }
++
++        @Override
++        public Dialog onCreateDialog(Bundle savedInstanceState) {
++            int id = getArguments().getInt("id");
++                switch (id) {
++                   case DLG_SAFE_HEADSET_VOLUME:
++                       return new AlertDialog.Builder(getActivity())
++                           .setTitle(R.string.attention)
++                           .setMessage(R.string.safe_headset_volume_warning_dialog_text)
++                           .setPositiveButton(R.string.ok,
++                               new DialogInterface.OnClickListener() {
++                                   public void onClick(DialogInterface dialog, int which) {
++                                       Settings.System.putInt(getOwner().getActivity().getContentResolver(),
++                                       Settings.System.SAFE_HEADSET_VOLUME, 0);
++                                   }
++                               })
++                           .setNegativeButton(R.string.cancel,
++                               new DialogInterface.OnClickListener() {
++                                   public void onClick(DialogInterface dialog, int which) {
++                                       dialog.cancel();
++                                   }
++                               })
++                           .create();
++                }
++                   throw new IllegalArgumentException("unknown id " + id);
++        }
++
++        @Override
++        public void onCancel(DialogInterface dialog) {
++            int id = getArguments().getInt("id");
++                switch (id) {
++                   case DLG_SAFE_HEADSET_VOLUME:
++                       getOwner().mSafeHeadsetVolume.setChecked(true);
++                       break;
++                   }
++        }
++   }
+ }
+-- 
+2.7.4
+

@@ -1,0 +1,55 @@
+From 89339474430528b33b763d7acb3e9d1510d00b92 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Tue, 15 May 2018 20:50:44 +0400
+Subject: [PATCH 06/14] exynos5camera: Remove unneeded / broken settings for
+ now
+
+Change-Id: I64e386a8df0344c0995fcfb0ce05e55aed89c034
+---
+ src/com/android/camera/PhotoMenu.java | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
+
+diff --git a/src/com/android/camera/PhotoMenu.java b/src/com/android/camera/PhotoMenu.java
+index 8f4886b..9570896 100644
+--- a/src/com/android/camera/PhotoMenu.java
++++ b/src/com/android/camera/PhotoMenu.java
+@@ -181,32 +181,27 @@ public class PhotoMenu extends MenuController
+         }
+ 
+         mOtherKeys1 = new String[] {
+-                CameraSettings.KEY_SELFIE_FLASH,
+                 CameraSettings.KEY_FLASH_MODE,
+-                CameraSettings.KEY_RECORD_LOCATION,
+                 CameraSettings.KEY_PICTURE_SIZE,
+                 CameraSettings.KEY_TIMER,
+-                CameraSettings.KEY_CAMERA_SAVEPATH,
+                 CameraSettings.KEY_LONGSHOT,
+                 CameraSettings.KEY_FACE_DETECTION,
+                 CameraSettings.KEY_ISO,
+                 CameraSettings.KEY_EXPOSURE,
+                 CameraSettings.KEY_WHITE_BALANCE,
+-                CameraSettings.KEY_QC_CHROMA_FLASH,
+-                CameraSettings.KEY_FOCUS_TIME,
+                 CameraSettings.KEY_METERING_MODE,
+                 CameraSettings.KEY_SHUTTER_SPEED,
+                 CameraSettings.KEY_REDEYE_REDUCTION,
+                 CameraSettings.KEY_SELFIE_MIRROR,
+-                CameraSettings.KEY_SHUTTER_SOUND,
+-                CameraSettings.KEY_POWER_SHUTTER,
+                 CameraSettings.KEY_MAX_BRIGHTNESS,
+                 CameraSettings.KEY_SATURATION,
+                 CameraSettings.KEY_SHARPNESS,
+                 CameraSettings.KEY_AUTOEXPOSURE,
+                 CameraSettings.KEY_ANTIBANDING,
+-                CameraSettings.KEY_DENOISE,
+-                CameraSettings.KEY_AUTO_HDR
++                CameraSettings.KEY_SHUTTER_SOUND,
++                CameraSettings.KEY_POWER_SHUTTER,
++                CameraSettings.KEY_RECORD_LOCATION,
++                CameraSettings.KEY_CAMERA_SAVEPATH,
+         };
+ 
+         mOtherKeys2 = new String[] {
+-- 
+2.7.4
+

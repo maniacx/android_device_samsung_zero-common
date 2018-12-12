@@ -1,0 +1,25 @@
+From 6f25e1c6507718f485688654c2c3d9ed25c6a5ad Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Mon, 11 Jun 2018 10:31:45 +0800
+Subject: [PATCH 2/2] Fix Jack
+
+---
+ core/config.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/config.mk b/core/config.mk
+index 1ecf146..0ac39bd 100644
+--- a/core/config.mk
++++ b/core/config.mk
+@@ -732,7 +732,7 @@ APICHECK_CLASSPATH_ENTRIES := \
+     )
+ APICHECK_CLASSPATH := $(subst $(space),:,$(strip $(APICHECK_CLASSPATH_ENTRIES)))
+ 
+-APICHECK_COMMAND := $(APICHECK) -JXmx1024m -J"classpath $(APICHECK_CLASSPATH)"
++APICHECK_COMMAND := $(APICHECK) -JXmx6144m -J"classpath $(APICHECK_CLASSPATH)"
+ 
+ # Boolean variable determining if Treble is fully enabled
+ PRODUCT_FULL_TREBLE := false
+-- 
+2.7.4
+

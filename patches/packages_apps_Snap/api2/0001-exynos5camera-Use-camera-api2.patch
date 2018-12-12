@@ -1,0 +1,26 @@
+From 7efcefe1375c3497bf9d518b70688e8062c263cb Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Mon, 9 Jul 2018 01:23:44 +0400
+Subject: [PATCH 1/2] exynos5camera: Use camera api2
+
+Change-Id: I5478671173da76a8f202df95f2094278c3807119
+---
+ res/values/config.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/res/values/config.xml b/res/values/config.xml
+index 9b506b0..cceadc5 100644
+--- a/res/values/config.xml
++++ b/res/values/config.xml
+@@ -29,7 +29,7 @@
+     <bool name="enable_warped_pano_preview">false</bool>
+ 
+     <!-- Enable support for camera api v2 -->
+-    <bool name="support_camera_api_v2">false</bool>
++    <bool name="support_camera_api_v2">true</bool>
+ 
+     <!-- Opens back camera using openLegacy() and forces api v1 -->
+     <bool name="back_camera_open_legacy">true</bool>
+-- 
+2.7.4
+

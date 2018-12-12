@@ -1,0 +1,47 @@
+From 6115ca3a4136cedfd102f4c522ab08f371a5a54c Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Fri, 28 Sep 2018 17:55:01 +0400
+Subject: [PATCH 17/18] add samsungs HRM permission
+
+Change-Id: Ic607987496c10a61025257132054d7e1630879e4
+---
+ core/res/AndroidManifest.xml | 8 ++++++++
+ data/etc/platform.xml        | 3 +++
+ 2 files changed, 11 insertions(+)
+
+diff --git a/core/res/AndroidManifest.xml b/core/res/AndroidManifest.xml
+index bda4d5a..83d7c7a 100644
+--- a/core/res/AndroidManifest.xml
++++ b/core/res/AndroidManifest.xml
+@@ -3541,6 +3541,14 @@
+     <permission android:name="android.permission.SUBSTITUTE_NOTIFICATION_APP_NAME"
+                 android:protectionLevel="signature|privileged" />
+ 
++    <!-- Allows the app to access the samsung private sensor. -->
++    <permission android:name="com.samsung.permission.SSENSOR"
++                android:protectionLevel="signatureOrSystem"/>
++
++    <!-- Allows the app to access the hrm sensor. -->
++    <permission android:name="com.samsung.permission.HRM_EXT"
++                android:protectionLevel="signatureOrSystem"/>
++
+     <!-- @SystemApi Allows an application to show notifications before the device is provisioned.
+          @hide  <p>Not for use by third-party applications.</p> -->
+     <permission android:name="android.permission.NOTIFICATION_DURING_SETUP"
+diff --git a/data/etc/platform.xml b/data/etc/platform.xml
+index 4c89b5d..1f2c81e 100644
+--- a/data/etc/platform.xml
++++ b/data/etc/platform.xml
+@@ -158,6 +158,9 @@
+     <assign-permission name="android.permission.UPDATE_APP_OPS_STATS" uid="cameraserver" />
+     <assign-permission name="android.permission.GET_PROCESS_STATE_AND_OOM_SCORE" uid="cameraserver" />
+ 
++    <assign-permission name="com.samsung.permission.HRM_EXT" uid="cameraserver" />
++    <assign-permission name="com.samsung.permission.SSENSOR" uid="cameraserver" />
++
+     <assign-permission name="android.permission.ACCESS_SURFACE_FLINGER" uid="graphics" />
+ 
+     <!-- This is a list of all the libraries available for application
+-- 
+2.7.4
+

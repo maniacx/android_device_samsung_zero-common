@@ -1,0 +1,190 @@
+From 29c56e7589e97584328a730f37b8b7b265ef536a Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sun, 8 Jul 2018 15:34:42 +0400
+Subject: [PATCH 14/14] update: scene mode and disable customisation in auto
+ mode
+
+Change-Id: I4611d989aa3e35c54507a15fc32a7bb3a8d2e25c
+---
+ res/values/qcomstrings.xml              | 58 ++++++++++++++++++---------------
+ src/com/android/camera/PhotoMenu.java   | 41 +++++++++++++----------
+ src/com/android/camera/PhotoModule.java |  5 +--
+ 3 files changed, 58 insertions(+), 46 deletions(-)
+
+diff --git a/res/values/qcomstrings.xml b/res/values/qcomstrings.xml
+index 4af1601..3fe6110 100755
+--- a/res/values/qcomstrings.xml
++++ b/res/values/qcomstrings.xml
+@@ -461,37 +461,41 @@
+     <string name="pref_camera_iso_entry_iso3200">ISO3200</string>
+     <string name="pref_camera_iso_entry_iso6400">ISO6400</string>
+     <string name="pref_camera_iso_entry_iso12800">ISO12800</string>
++    <string name="pref_camera_iso_entry_iso_night">night</string>
++    <string name="pref_camera_iso_entry_iso_sport">sports</string>
+ 
+     <!-- ISO entry values. Do not translate. -->
+     <string name="pref_camera_iso_value_auto" translatable="false">auto</string>
+     <string name="pref_camera_iso_value_isodeblur" translatable="false">ISO_HJR</string>
+-    <string name="pref_camera_iso_value_iso50" translatable="false">ISO50</string>
+-    <string name="pref_camera_iso_value_iso100" translatable="false">ISO100</string>
+-    <string name="pref_camera_iso_value_iso125" translatable="false">ISO125</string>
+-    <string name="pref_camera_iso_value_iso150" translatable="false">ISO150</string>
+-    <string name="pref_camera_iso_value_iso200" translatable="false">ISO200</string>
+-    <string name="pref_camera_iso_value_iso250" translatable="false">ISO250</string>
+-    <string name="pref_camera_iso_value_iso300" translatable="false">ISO300</string>
+-    <string name="pref_camera_iso_value_iso320" translatable="false">ISO320</string>
+-    <string name="pref_camera_iso_value_iso350" translatable="false">ISO350</string>
+-    <string name="pref_camera_iso_value_iso400" translatable="false">ISO400</string>
+-    <string name="pref_camera_iso_value_iso450" translatable="false">ISO450</string>
+-    <string name="pref_camera_iso_value_iso500" translatable="false">ISO500</string>
+-    <string name="pref_camera_iso_value_iso600" translatable="false">ISO600</string>
+-    <string name="pref_camera_iso_value_iso640" translatable="false">ISO640</string>
+-    <string name="pref_camera_iso_value_iso700" translatable="false">ISO700</string>
+-    <string name="pref_camera_iso_value_iso800" translatable="false">ISO800</string>
+-    <string name="pref_camera_iso_value_iso1000" translatable="false">ISO1000</string>
+-    <string name="pref_camera_iso_value_iso1200" translatable="false">ISO1200</string>
+-    <string name="pref_camera_iso_value_iso1250" translatable="false">ISO1250</string>
+-    <string name="pref_camera_iso_value_iso1500" translatable="false">ISO1500</string>
+-    <string name="pref_camera_iso_value_iso1600" translatable="false">ISO1600</string>
+-    <string name="pref_camera_iso_value_iso2000" translatable="false">ISO2000</string>
+-    <string name="pref_camera_iso_value_iso2500" translatable="false">ISO2500</string>
+-    <string name="pref_camera_iso_value_iso2700" translatable="false">ISO2700</string>
+-    <string name="pref_camera_iso_value_iso3200" translatable="false">ISO3200</string>
+-    <string name="pref_camera_iso_value_iso6400" translatable="false">ISO6400</string>
+-    <string name="pref_camera_iso_value_iso12800" translatable="false">ISO12800</string>
++    <string name="pref_camera_iso_value_iso50" translatable="false">50</string>
++    <string name="pref_camera_iso_value_iso100" translatable="false">100</string>
++    <string name="pref_camera_iso_value_iso125" translatable="false">125</string>
++    <string name="pref_camera_iso_value_iso150" translatable="false">150</string>
++    <string name="pref_camera_iso_value_iso200" translatable="false">200</string>
++    <string name="pref_camera_iso_value_iso250" translatable="false">250</string>
++    <string name="pref_camera_iso_value_iso300" translatable="false">300</string>
++    <string name="pref_camera_iso_value_iso320" translatable="false">320</string>
++    <string name="pref_camera_iso_value_iso350" translatable="false">350</string>
++    <string name="pref_camera_iso_value_iso400" translatable="false">400</string>
++    <string name="pref_camera_iso_value_iso450" translatable="false">450</string>
++    <string name="pref_camera_iso_value_iso500" translatable="false">500</string>
++    <string name="pref_camera_iso_value_iso600" translatable="false">600</string>
++    <string name="pref_camera_iso_value_iso640" translatable="false">640</string>
++    <string name="pref_camera_iso_value_iso700" translatable="false">700</string>
++    <string name="pref_camera_iso_value_iso800" translatable="false">800</string>
++    <string name="pref_camera_iso_value_iso1000" translatable="false">1000</string>
++    <string name="pref_camera_iso_value_iso1200" translatable="false">1200</string>
++    <string name="pref_camera_iso_value_iso1250" translatable="false">1250</string>
++    <string name="pref_camera_iso_value_iso1500" translatable="false">1500</string>
++    <string name="pref_camera_iso_value_iso1600" translatable="false">1600</string>
++    <string name="pref_camera_iso_value_iso2000" translatable="false">2000</string>
++    <string name="pref_camera_iso_value_iso2500" translatable="false">2500</string>
++    <string name="pref_camera_iso_value_iso2700" translatable="false">2700</string>
++    <string name="pref_camera_iso_value_iso3200" translatable="false">3200</string>
++    <string name="pref_camera_iso_value_iso6400" translatable="false">6400</string>
++    <string name="pref_camera_iso_value_iso12800" translatable="false">12800</string>
++    <string name="pref_camera_iso_value_iso_night" translatable="false">night</string>
++    <string name="pref_camera_iso_value_iso_sports" translatable="false">sports</string>
+ 
+     <!-- Settings screen, Anti Banding title -->
+     <string name="pref_camera_antibanding_title">Antibanding</string>
+diff --git a/src/com/android/camera/PhotoMenu.java b/src/com/android/camera/PhotoMenu.java
+index 9570896..26750ae 100644
+--- a/src/com/android/camera/PhotoMenu.java
++++ b/src/com/android/camera/PhotoMenu.java
+@@ -184,6 +184,10 @@ public class PhotoMenu extends MenuController
+                 CameraSettings.KEY_FLASH_MODE,
+                 CameraSettings.KEY_PICTURE_SIZE,
+                 CameraSettings.KEY_TIMER,
++                CameraSettings.KEY_SHUTTER_SOUND,
++                CameraSettings.KEY_POWER_SHUTTER,
++                CameraSettings.KEY_RECORD_LOCATION,
++                CameraSettings.KEY_MAX_BRIGHTNESS,
+                 CameraSettings.KEY_LONGSHOT,
+                 CameraSettings.KEY_FACE_DETECTION,
+                 CameraSettings.KEY_ISO,
+@@ -193,14 +197,10 @@ public class PhotoMenu extends MenuController
+                 CameraSettings.KEY_SHUTTER_SPEED,
+                 CameraSettings.KEY_REDEYE_REDUCTION,
+                 CameraSettings.KEY_SELFIE_MIRROR,
+-                CameraSettings.KEY_MAX_BRIGHTNESS,
+                 CameraSettings.KEY_SATURATION,
+                 CameraSettings.KEY_SHARPNESS,
+                 CameraSettings.KEY_AUTOEXPOSURE,
+                 CameraSettings.KEY_ANTIBANDING,
+-                CameraSettings.KEY_SHUTTER_SOUND,
+-                CameraSettings.KEY_POWER_SHUTTER,
+-                CameraSettings.KEY_RECORD_LOCATION,
+                 CameraSettings.KEY_CAMERA_SAVEPATH,
+         };
+ 
+@@ -627,6 +627,15 @@ public class PhotoMenu extends MenuController
+             ListPreference pref_tnr = mPreferenceGroup.findPreference(CameraSettings.KEY_TNR_MODE);
+             ListPreference pref_cds = mPreferenceGroup.findPreference(CameraSettings.KEY_CDS_MODE);
+ 
++            ListPreference scenePref = mPreferenceGroup.findPreference(CameraSettings.KEY_SCENE_MODE);
++            ListPreference pref_iso = mPreferenceGroup.findPreference(CameraSettings.KEY_ISO);
++            ListPreference pref_exp = mPreferenceGroup.findPreference(CameraSettings.KEY_EXPOSURE);
++            ListPreference pref_wbe = mPreferenceGroup.findPreference(CameraSettings.KEY_WHITE_BALANCE);
++            ListPreference pref_met = mPreferenceGroup.findPreference(CameraSettings.KEY_METERING_MODE);
++            ListPreference pref_sat = mPreferenceGroup.findPreference(CameraSettings.KEY_SATURATION);
++            ListPreference pref_shp = mPreferenceGroup.findPreference(CameraSettings.KEY_SHARPNESS);
++            ListPreference pref_anb = mPreferenceGroup.findPreference(CameraSettings.KEY_ANTIBANDING);
++
+             String tnr = (pref_tnr != null) ? pref_tnr.getValue() : null;
+             String cds = (pref_cds != null) ? pref_cds.getValue() : null;
+ 
+@@ -654,7 +663,17 @@ public class PhotoMenu extends MenuController
+                     mIsCDSUpdated = false;
+                 }
+             }
++            if (notSame(scenePref, CameraSettings.KEY_SCENE_MODE, Parameters.SCENE_MODE_HDR)) {
++                if (pref_iso != null) mListMenu.setPreferenceEnabled(CameraSettings.KEY_ISO, false);
++                if (pref_exp != null) mListMenu.setPreferenceEnabled(CameraSettings.KEY_EXPOSURE, false);
++                if (pref_wbe != null) mListMenu.setPreferenceEnabled(CameraSettings.KEY_WHITE_BALANCE, false);
++                if (pref_met != null) mListMenu.setPreferenceEnabled(CameraSettings.KEY_METERING_MODE, false);
++                if (pref_sat != null) mListMenu.setPreferenceEnabled(CameraSettings.KEY_SATURATION, false);
++                if (pref_shp != null) mListMenu.setPreferenceEnabled(CameraSettings.KEY_SHARPNESS, false);
++                if (pref_anb != null) mListMenu.setPreferenceEnabled(CameraSettings.KEY_ANTIBANDING, false);
++            }
+         }
++
+         for (int i = 0; i < keyvalues.length; i += 2) {
+             if (keyvalues[i].equals(CameraSettings.KEY_SCENE_MODE)) {
+                 buttonSetEnabled(mSceneModeSwitcher, keyvalues[i + 1] == null);
+@@ -695,19 +714,7 @@ public class PhotoMenu extends MenuController
+         String zsl = (pref != null) ? pref.getValue() : null;
+         pref = mPreferenceGroup.findPreference(CameraSettings.KEY_AUTO_HDR);
+         String autohdr = (pref != null) ? pref.getValue() : null;
+-        if (((sceneMode != null) && !Parameters.SCENE_MODE_AUTO.equals(sceneMode))
+-                || ((autohdr != null) && autohdr.equals("enable"))) {
+-            popup1.setPreferenceEnabled(CameraSettings.KEY_FOCUS_MODE, false);
+-            popup1.setPreferenceEnabled(CameraSettings.KEY_AUTOEXPOSURE, false);
+-            popup1.setPreferenceEnabled(CameraSettings.KEY_SATURATION, false);
+-            popup1.setPreferenceEnabled(CameraSettings.KEY_CONTRAST, false);
+-            popup1.setPreferenceEnabled(CameraSettings.KEY_SHARPNESS, false);
+-            popup1.setPreferenceEnabled(CameraSettings.KEY_COLOR_EFFECT, false);
+-            popup1.setPreferenceEnabled(CameraSettings.KEY_FLASH_MODE, false);
+-            popup1.setPreferenceEnabled(CameraSettings.KEY_WHITE_BALANCE, false);
+-            popup1.setPreferenceEnabled(CameraSettings.KEY_EXPOSURE, false);
+-            popup1.setPreferenceEnabled(CameraSettings.KEY_QC_CHROMA_FLASH, false);
+-        }
++
+         if ((autohdr != null) && autohdr.equals("enable")) {
+             popup1.setPreferenceEnabled(CameraSettings.KEY_SCENE_MODE, false);
+         }
+diff --git a/src/com/android/camera/PhotoModule.java b/src/com/android/camera/PhotoModule.java
+index 8a4ec0c..f823eb6 100644
+--- a/src/com/android/camera/PhotoModule.java
++++ b/src/com/android/camera/PhotoModule.java
+@@ -4327,8 +4327,9 @@ public class PhotoModule
+ 				mParameters.setSceneMode(Parameters.SCENE_MODE_AUTO);
+ 			} catch (NullPointerException e) {
+ 			}
+-        } else if (mSceneMode == null) {
+-            mSceneMode = Parameters.SCENE_MODE_AUTO;
++        } else {
++            mSceneMode = mPreferences.getString(CameraSettings.KEY_SCENE_MODE,
++                    mActivity.getString(R.string.pref_camera_scenemode_default));
+         }
+ 
+         if (CameraUtil.isSupported(mSceneMode, mParameters.getSupportedSceneModes())) {
+-- 
+2.7.4
+

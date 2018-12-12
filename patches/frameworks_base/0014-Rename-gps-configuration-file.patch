@@ -1,0 +1,26 @@
+From 0652e0b60778c3ac1862afc5b3234c1d7301a2bb Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Wed, 12 Sep 2018 11:38:23 +0530
+Subject: [PATCH 14/18] Rename gps configuration file.
+
+Change-Id: I17f77212eb5bd5d538a71a962705827eec34dcac
+---
+ .../core/java/com/android/server/location/GnssLocationProvider.java     | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/services/core/java/com/android/server/location/GnssLocationProvider.java b/services/core/java/com/android/server/location/GnssLocationProvider.java
+index 74ddfc5..4f37b8f 100644
+--- a/services/core/java/com/android/server/location/GnssLocationProvider.java
++++ b/services/core/java/com/android/server/location/GnssLocationProvider.java
+@@ -223,7 +223,7 @@ public class GnssLocationProvider implements LocationProviderInterface {
+     private static final int AGPS_RIL_REQUEST_SETID_MSISDN = 2;
+ 
+     //TODO(b/33112647): Create gps_debug.conf with commented career parameters.
+-    private static final String DEBUG_PROPERTIES_FILE = "/etc/gps_debug.conf";
++    private static final String DEBUG_PROPERTIES_FILE = "/system/etc/gps.conf";
+ 
+     // ref. location info
+     private static final int AGPS_REF_LOCATION_TYPE_GSM_CELLID = 1;
+-- 
+2.7.4
+

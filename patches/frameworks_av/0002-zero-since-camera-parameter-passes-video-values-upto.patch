@@ -1,0 +1,33 @@
+From 211872c5f888a21382ec679cdd5254712d8c5dca Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sun, 26 Nov 2017 00:18:39 +0400
+Subject: [PATCH 2/3] zero: since camera parameter passes video values upto
+ 1080p, it bails when snap choose video recoding higher than 1080p Hack this
+ shit.
+
+---
+ media/libstagefright/CameraSource.cpp | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/media/libstagefright/CameraSource.cpp b/media/libstagefright/CameraSource.cpp
+index 541c286..245a5a9 100644
+--- a/media/libstagefright/CameraSource.cpp
++++ b/media/libstagefright/CameraSource.cpp
+@@ -371,9 +371,11 @@ status_t CameraSource::configureCamera(
+     getSupportedVideoSizes(*params, &isSetVideoSizeSupportedByCamera, sizes);
+     bool isCameraParamChanged = false;
+     if (width != -1 && height != -1) {
+-        if (!isVideoSizeSupported(width, height, sizes)) {
+-            ALOGE("Video dimension (%dx%d) is unsupported", width, height);
+-            return BAD_VALUE;
++        if (!((width == 2560 && height == 1440) || (width == 3840 && height == 2160))) {
++            if (!isVideoSizeSupported(width, height, sizes)) {
++                ALOGE("Video dimension (%dx%d) is unsupported", width, height);
++                return BAD_VALUE;
++            }
+         }
+         if (isSetVideoSizeSupportedByCamera) {
+             params->setVideoSize(width, height);
+-- 
+2.7.4
+

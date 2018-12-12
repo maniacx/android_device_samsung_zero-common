@@ -1,0 +1,107 @@
+From 994800af154a63f72ae242dab4186de698e34c3d Mon Sep 17 00:00:00 2001
+From: Satish Kodishala <skodisha@codeaurora.org>
+Date: Thu, 26 Oct 2017 18:57:59 +0530
+Subject: [PATCH 1/2] Get BluetoothHeadset profile proxy after BT is ON
+
+Everytime BT is ON, get the bluetooth headset profile
+proxy to make sure we get correct BluetoothHeadset
+after HeadsetService is up.
+
+CRs-Fixed: 2141229
+Change-Id: I745e80fb4446d0c3e60e93f8cbdce29e0e3b1158
+---
+ .../server/telecom/BluetoothAdapterProxy.java        |  7 +++++++
+ .../server/telecom/BluetoothHeadsetProxy.java        |  6 +++++-
+ .../server/telecom/BluetoothPhoneServiceImpl.java    | 20 ++++++++++++++++++--
+ 3 files changed, 30 insertions(+), 3 deletions(-)
+
+diff --git a/src/com/android/server/telecom/BluetoothAdapterProxy.java b/src/com/android/server/telecom/BluetoothAdapterProxy.java
+index 72962b8..e1371d6 100644
+--- a/src/com/android/server/telecom/BluetoothAdapterProxy.java
++++ b/src/com/android/server/telecom/BluetoothAdapterProxy.java
+@@ -37,4 +37,11 @@ public class BluetoothAdapterProxy {
+         }
+         return mBluetoothAdapter.getProfileProxy(context, listener, profile);
+     }
++
++    public void closeProfileProxy(int profile, BluetoothProfile proxy) {
++        if (mBluetoothAdapter == null) {
++            return;
++        }
++        mBluetoothAdapter.closeProfileProxy(profile, proxy);
++    }
+ }
+diff --git a/src/com/android/server/telecom/BluetoothHeadsetProxy.java b/src/com/android/server/telecom/BluetoothHeadsetProxy.java
+index 07cc626..df883a8 100644
+--- a/src/com/android/server/telecom/BluetoothHeadsetProxy.java
++++ b/src/com/android/server/telecom/BluetoothHeadsetProxy.java
+@@ -67,4 +67,8 @@ public class BluetoothHeadsetProxy {
+     public boolean disconnectAudio() {
+         return mBluetoothHeadset.disconnectAudio();
+     }
+-}
+\ No newline at end of file
++
++    public BluetoothHeadset getBluetoothHeadsetObj() {
++        return mBluetoothHeadset;
++    }
++}
+diff --git a/src/com/android/server/telecom/BluetoothPhoneServiceImpl.java b/src/com/android/server/telecom/BluetoothPhoneServiceImpl.java
+index 93d4f71..0046bec 100644
+--- a/src/com/android/server/telecom/BluetoothPhoneServiceImpl.java
++++ b/src/com/android/server/telecom/BluetoothPhoneServiceImpl.java
+@@ -399,6 +399,7 @@ public class BluetoothPhoneServiceImpl {
+                 @Override
+                 public void onServiceConnected(int profile, BluetoothProfile proxy) {
+                     synchronized (mLock) {
++                        Log.w(TAG, "onServiceConnected: setting mBluetoothHeadset");
+                         setBluetoothHeadset(new BluetoothHeadsetProxy((BluetoothHeadset) proxy));
+                     }
+                 }
+@@ -406,7 +407,12 @@ public class BluetoothPhoneServiceImpl {
+                 @Override
+                 public void onServiceDisconnected(int profile) {
+                     synchronized (mLock) {
+-                        mBluetoothHeadset = null;
++                        if (mBluetoothHeadset != null) {
++                            mBluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET,
++                                                  (BluetoothProfile)(mBluetoothHeadset.getBluetoothHeadsetObj()));
++                            Log.w(TAG, "onServiceDisconnected: setting mBluetoothHeadet to null");
++                            mBluetoothHeadset = null;
++                        }
+                     }
+                 }
+             };
+@@ -424,10 +430,21 @@ public class BluetoothPhoneServiceImpl {
+                 Log.d(TAG, "Bluetooth Adapter state: %d", state);
+                 if (state == BluetoothAdapter.STATE_ON) {
+                     try {
++                        Log.w(TAG, "Calling get Profile proxy");
++                        mBluetoothAdapter.getProfileProxy(context, mProfileListener,
++                                                 BluetoothProfile.HEADSET);
++                        Log.w(TAG, "Done Calling get Profile proxy");
+                         mBinder.queryPhoneState();
+                     } catch (RemoteException e) {
+                         // Remote exception not expected
+                     }
++                } else if(state == BluetoothAdapter.STATE_OFF) {
++                    if (mBluetoothHeadset != null) {
++                        mBluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET,
++                                             (BluetoothProfile)(mBluetoothHeadset.getBluetoothHeadsetObj()));
++                        Log.w(TAG, "setting mBluetoothHeadet to null");
++                        mBluetoothHeadset = null;
++                    }
+                 }
+             }
+         }
+@@ -468,7 +485,6 @@ public class BluetoothPhoneServiceImpl {
+             Log.d(this, "BluetoothPhoneService shutting down, no BT Adapter found.");
+             return;
+         }
+-        mBluetoothAdapter.getProfileProxy(context, mProfileListener, BluetoothProfile.HEADSET);
+ 
+         IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+         context.registerReceiver(mBluetoothAdapterReceiver, intentFilter);
+-- 
+2.7.4
+

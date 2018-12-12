@@ -1,0 +1,27 @@
+From e0b8a4a04de3a0547eae2be8b76c5ae286e88c7c Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Wed, 21 Mar 2018 21:59:20 +0400
+Subject: [PATCH] Gallery: define scrolling friction to 0.2
+
+Change-Id: I4131a28258b26cea0193ea630fd5ec6bb5c7e57d
+---
+ gallerycommon/src/com/android/gallery3d/common/OverScroller.java | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/gallerycommon/src/com/android/gallery3d/common/OverScroller.java b/gallerycommon/src/com/android/gallery3d/common/OverScroller.java
+index 6becb3a..8dcb9c5 100644
+--- a/gallerycommon/src/com/android/gallery3d/common/OverScroller.java
++++ b/gallerycommon/src/com/android/gallery3d/common/OverScroller.java
+@@ -574,7 +574,8 @@ public class OverScroller {
+         private int mOver;
+ 
+         // Fling friction
+-        private float mFlingFriction = ViewConfiguration.getScrollFriction();
++        // private float mFlingFriction = ViewConfiguration.getScrollFriction();
++        private float mFlingFriction = 0.2f;
+ 
+         // Current state of the animation.
+         private int mState = SPLINE;
+-- 
+2.7.4
+

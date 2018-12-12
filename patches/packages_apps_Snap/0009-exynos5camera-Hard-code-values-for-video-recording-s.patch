@@ -1,0 +1,51 @@
+From 429ae326d806bb2dc93d0440529d185cf09e1fe2 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Tue, 15 May 2018 22:00:57 +0400
+Subject: [PATCH 09/14] exynos5camera: Hard code values for video recording
+ sizes. We use hal1 which passes video value only upto 1080p. But camera hal
+ does support qhd and 2k recording. Therefore hard code values.
+
+Change-Id: I31521a260804a45843114d1a8f95ef201bc58afa
+---
+ src/com/android/camera/CameraSettings.java | 24 +++++++-----------------
+ 1 file changed, 7 insertions(+), 17 deletions(-)
+
+diff --git a/src/com/android/camera/CameraSettings.java b/src/com/android/camera/CameraSettings.java
+index 1c99783..0d38cd4 100644
+--- a/src/com/android/camera/CameraSettings.java
++++ b/src/com/android/camera/CameraSettings.java
+@@ -1561,24 +1561,14 @@ public class CameraSettings {
+     public static ArrayList<String> getSupportedVideoQualities(int cameraId,
+             Parameters parameters) {
+         ArrayList<String> supported = new ArrayList<String>();
+-        List<Size> supportedVideoSizes = parameters.getSupportedVideoSizes();
+         List<String> temp;
+-        if (supportedVideoSizes == null) {
+-            // video-size not specified in parameter list,
+-            // assume all profiles in media_profiles are supported.
+-            temp = new ArrayList<String>();
+-            temp.add("4096x2160");
+-            temp.add("3840x2160");
+-            temp.add("1920x1080");
+-            temp.add("1280x720");
+-            temp.add("720x480");
+-            temp.add("640x480");
+-            temp.add("352x288");
+-            temp.add("320x240");
+-            temp.add("176x144");
+-        } else {
+-            temp = sizeListToStringList(supportedVideoSizes);
+-        }
++        temp = new ArrayList<String>();
++        temp.add("3840x2160");
++        temp.add("2560x1440");
++        temp.add("1920x1080");
++        temp.add("1280x720");
++        temp.add("720x480");
++        temp.add("320x240");
+ 
+         for (String videoSize : temp) {
+             if (VIDEO_QUALITY_TABLE.containsKey(videoSize)) {
+-- 
+2.7.4
+

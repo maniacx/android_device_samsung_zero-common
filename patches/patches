@@ -1,0 +1,91 @@
+cd ~/rr8/build/make
+git am ~/rr8/device/samsung/zero-common/patches/build_make/0001-Make-debuggable.patch
+git am ~/rr8/device/samsung/zero-common/patches/build_make/0002-Fix-Jack.patch
+
+cd ~/rr8/frameworks/av
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_av/0001-libstagefright-Add-support-for-NV21-color-format.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_av/0002-zero-since-camera-parameter-passes-video-values-upto.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_av/0003-stagefright-add-changes-related-to-high-framerates-i.patch
+
+cd ~/rr8/frameworks/base
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0001-Default-to-lineage-scrolling-values.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0002-Keyguard-Inform-we-are-wireless-charging.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0003-Remove-reboot-hot-and-bootloader-option-until-we-fix.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0004-Safe-headset-volume-option-1-of-2.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0005-Move-high-touch-sensitivity-and-hovering-to-InputSer.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0006-Add-option-to-Fade-LED-through-lineagehw-1-5.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0007-zero-Let-all-other-apps-except-Snap-use-HAL1.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0008-Don-t-reset-audio-route-if-setBluetoothScoOn-is-call.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0009-BT-Send-info-if-call-is-CS-type-from-telecomm-servic.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0010-Bluetooth-Implement-API-to-get-device-identification.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0011-Don-t-set-A2dpsuspend-flag-to-false-when-a-new-A2dp-.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0012-Bluetooth-Add-support-to-get-AG-manufacturer-informa.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0013-bluetooth-Adjust-battery-level-for-bluetooth-devices.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0014-Rename-gps-configuration-file.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0015-base-add-reading-mode-tile.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0016-SystemUI-Update-reading-mode-tile-for-new-API.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0017-add-samsungs-HRM-permission.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_base/0018-Reset-all-package-signatures-on-boot.patch
+
+cd ~/rr8/frameworks/native
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_native/0001-Revert-Synchronous-resource-recover-mechanism-for-IS.patch
+git am ~/rr8/device/samsung/zero-common/patches/frameworks_native/0002-SurfaceFlinger_hwc1-fix-state-recognition-of-color-c.patch
+
+cd ~/rr8/external/wpa_supplicant_8
+git am ~/rr8/device/samsung/zero-common/patches/external_wpa_supplicant_8/0001-wifi-direct-fix.patch
+
+cd ~/rr8/hardware/broadcom/libbt
+git am ~/rr8/device/samsung/zero-common/patches/hardware_broadcom_libbt/0001-exynos7420-Detect-only-wisol-chip-id-for-exynos7420.patch
+
+cd ~/rr8/hardware/broadcom/wlan
+git am ~/rr8/device/samsung/zero-common/patches/hardware_broadcom_wlan/0001-Update-headers-from-kernel-drivers-bcm4358.patch
+
+cd ~/rr8/hardware/interfaces
+git am ~/rr8/device/samsung/zero-common/patches/hardware_interfaces/0001-gps.default.so-fix-crash-on-access-to-unset-AGpsRilC.patch
+git am ~/rr8/device/samsung/zero-common/patches/hardware_interfaces/0002-Merge-some-legacy-function-from-lineage-interface-to.patch
+git am ~/rr8/device/samsung/zero-common/patches/hardware_interfaces/0003-bt-voice-call-sco-config-after-initializing-BT-firmw.patch
+
+cd ~/rr8/hardware/lineage/lineagehw
+git am ~/rr8/device/samsung/zero-common/patches/hardware_lineage_lineagehw/0001-Add-option-to-Fade-LED-through-lineagehw-5-5.patch
+
+cd ~/rr8/hardware/samsung
+git am ~/rr8/device/samsung/zero-common/patches/hardware_samsung/0001-Enable-variable-button-backlight.patch
+git am ~/rr8/device/samsung/zero-common/patches/hardware_samsung/0002-fingerprint-refactor-implementation-of-custom-cancel.patch
+git am ~/rr8/device/samsung/zero-common/patches/hardware_samsung/0003-dtbtool-sort-dtb-based-on-chip_id-hw_rev.patch
+git am ~/rr8/device/samsung/zero-common/patches/hardware_samsung/0004-Remove-unused-code.patch
+
+cd ~/rr8/hardware/samsung_slsi-cm/exynos
+git am ~/rr8/device/samsung/zero-common/patches/hardware_samsung_slsi-cm_exynos/0001-Add.patch
+
+cd ~/rr8/hardware/samsung_slsi-cm/exynos7420
+git am ~/rr8/device/samsung/zero-common/patches/hardware_samsung_slsi-cm_exynos7420/0001-libhwcmodule-fix-invalid-count-of-HWC-windows.patch
+
+cd ~/rr8/lineage-sdk
+git am ~/rr8/device/samsung/zero-common/patches/lineage-sdk/0001-Add-option-to-Fade-LED-through-lineagehw-4-5.patch
+
+cd ~/rr8/packages/apps/Gallery2
+git am ~/rr8/device/samsung/zero-common/patches/packages_apps_Gallery2/0001-Gallery-define-scrolling-friction-to-0.2.patch
+
+cd ~/rr8/packages/apps/Settings
+git am ~/rr8/device/samsung/zero-common/patches/packages_apps_Settings/0001-Safe-headset-volume-option-2-of-2-Add-switch-for-Saf.patch
+git am ~/rr8/device/samsung/zero-common/patches/packages_apps_Settings/0002-Add-option-to-Fade-LED-through-lineagehw-2-5.patch
+git am ~/rr8/device/samsung/zero-common/patches/packages_apps_Settings/0003-Remove-device-maintainer.patch
+
+cd ~/rr8/packages/apps/LineageParts
+git am ~/rr8/device/samsung/zero-common/patches/packages_apps_LineageParts/0001-Add-option-to-Fade-LED-through-lineagehw-3-5.patch
+
+cd ~/rr8/system/core
+git am ~/rr8/device/samsung/zero-common/patches/system_core/0001-healthd-Use-current-max-and-voltage-max-for-maxcharg.patch
+
+cd ~/rr8/packages/services/Telecomm
+git am ~/rr8/device/samsung/zero-common/patches/packages_services_Telecomm/0001-Get-BluetoothHeadset-profile-proxy-after-BT-is-ON.patch
+git am ~/rr8/device/samsung/zero-common/patches/packages_services_Telecomm/0002-BT-Send-intent-for-the-call-type-when-call-is-active.patch
+
+cd ~/rr8/vendor/rr
+git am ~/rr8/device/samsung/zero-common/patches/vendor_rr/0001-build-Auto-select-we-are-always-unnofficial.patch
+
+cd ~/rr8/packages/apps/Snap
+git checkout 1-video-mode
+
+cd ~/rr8
+

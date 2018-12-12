@@ -1,0 +1,164 @@
+From 67093226e9e26a72946582e0def081a6d01f3eef Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Wed, 16 May 2018 13:16:12 +0400
+Subject: [PATCH 08/14] exynos5camera: Enable video stabilization
+
+Change-Id: I0167b3254bd36dea20d85a840d307a648f712409
+---
+ res/values/qcomstrings.xml                 |  6 ++---
+ src/com/android/camera/CameraSettings.java | 15 ++-----------
+ src/com/android/camera/VideoModule.java    | 36 +++++++++---------------------
+ 3 files changed, 16 insertions(+), 41 deletions(-)
+
+diff --git a/res/values/qcomstrings.xml b/res/values/qcomstrings.xml
+index f16b909..a86d6fc 100755
+--- a/res/values/qcomstrings.xml
++++ b/res/values/qcomstrings.xml
+@@ -547,14 +547,14 @@
+ 
+     <!-- Select IS title -->
+     <string name="pref_camera_dis_title">Stabilization</string>
+-    <string name="pref_camera_dis_default" translatable="false">disable</string>
++    <string name="pref_camera_dis_default" translatable="false">off</string>
+ 
+     <!-- DIS choices -->
+     <string name="pref_camera_dis_entry_off">Off</string>
+     <string name="pref_camera_dis_entry_on">On</string>
+ 
+-    <string name="pref_camera_dis_value_disable" translatable="false">disable</string>
+-    <string name="pref_camera_dis_value_enable" translatable="false">enable</string>
++    <string name="pref_camera_dis_value_disable" translatable="false">off</string>
++    <string name="pref_camera_dis_value_enable" translatable="false">on</string>
+ 
+     <!-- Select Face Recognition title -->
+     <string name="pref_camera_facerc_title">Face recognition</string>
+diff --git a/src/com/android/camera/CameraSettings.java b/src/com/android/camera/CameraSettings.java
+index ba980bc..1c99783 100644
+--- a/src/com/android/camera/CameraSettings.java
++++ b/src/com/android/camera/CameraSettings.java
+@@ -180,7 +180,6 @@ public class CameraSettings {
+     public static final String KEY_QC_MULTI_TOUCH_FOCUS = "multi-touch-focus";
+     public static final String KEY_QC_STILL_MORE = "still-more";
+     public static final String KEY_QC_FACE_RECOGNITION = "face-recognition";
+-    public static final String KEY_QC_DIS_MODE = "dis";
+     public static final String KEY_QC_CDS_MODE = "cds-mode";
+     public static final String KEY_QC_VIDEO_CDS_MODE = "video-cds-mode";
+     public static final String KEY_QC_TNR_MODE = "tnr-mode";
+@@ -204,6 +203,8 @@ public class CameraSettings {
+     public static final String KEY_MAX_SHARPNESS = "sharpness-max";
+     public static final String KEY_RT_HDR = "rt-hdr";
+     public static final String KEY_METERING = "metering";
++    public static final String KEY_QC_DIS_MODE = "sw-vdis";
++    public static final String KEY_VIDEO_STABILIZATION = "video-stabilization";
+ 
+     public static final String RTHDR_ON = "on";
+     public static final String RTHDR_OFF = "off";
+@@ -604,14 +605,6 @@ public class CameraSettings {
+         return split(str);
+     }
+ 
+-    public static List<String> getSupportedDISModes(Parameters params) {
+-        String str = params.get(KEY_QC_SUPPORTED_DIS_MODES);
+-        if (str == null) {
+-            return null;
+-        }
+-        return split(str);
+-    }
+-
+     public static List<String> getSupportedSeeMoreModes(Parameters params) {
+         String str = params.get(KEY_QC_SUPPORTED_SEE_MORE_MODES);
+         if (str == null) {
+@@ -1220,10 +1213,6 @@ public class CameraSettings {
+                 removePreference(group, videoHdr.getKey());
+             }
+         }
+-        if (disMode != null) {
+-            filterUnsupportedOptions(group,
+-                    disMode, getSupportedDISModes(mParameters));
+-        }
+         if (focusMode != null) {
+             filterUnsupportedOptions(group,
+                     focusMode, mParameters.getSupportedFocusModes());
+diff --git a/src/com/android/camera/VideoModule.java b/src/com/android/camera/VideoModule.java
+index d7731da..c426ca9 100644
+--- a/src/com/android/camera/VideoModule.java
++++ b/src/com/android/camera/VideoModule.java
+@@ -2558,29 +2558,22 @@ public class VideoModule implements CameraModule,
+                 CameraSettings.KEY_DIS,
+                 mActivity.getString(R.string.pref_camera_dis_default));
+         Log.v(TAG, "DIS value =" + disMode);
+-        mIsDISEnabled = disMode.equals("enable");
++        mIsDISEnabled = disMode.equals("on");
+ 
+         if (is4KEnabled() && !PERSIST_4K_NO_LIMIT) {
+-            if (isSupported(mActivity.getString(R.string.pref_camera_dis_value_disable),
+-                    CameraSettings.getSupportedDISModes(mParameters))) {
+                 mParameters.set(CameraSettings.KEY_QC_DIS_MODE,
+                         mActivity.getString(R.string.pref_camera_dis_value_disable));
+                 mUI.overrideSettings(CameraSettings.KEY_DIS,
+                         mActivity.getString(R.string.pref_camera_dis_value_disable));
+                 mIsDISEnabled = false;
+-            } else {
+-                Log.e(TAG, "Not supported IS mode = " +
+-                        mActivity.getString(R.string.pref_camera_dis_value_disable));
+-            }
+         } else {
+-            if (isSupported(disMode,
+-                    CameraSettings.getSupportedDISModes(mParameters))) {
+-                mParameters.set(CameraSettings.KEY_QC_DIS_MODE, disMode);
+-            } else {
+-                Log.e(TAG, "Not supported IS mode = " + disMode);
+-            }
++            mParameters.set(CameraSettings.KEY_QC_DIS_MODE, disMode);
++        }
++        if(mIsDISEnabled) {
++            mParameters.set(CameraSettings.KEY_VIDEO_STABILIZATION, "true");
++        } else {
++            mParameters.set(CameraSettings.KEY_VIDEO_STABILIZATION, "false");
+         }
+-
+         // Set anti banding parameter.
+         String antiBanding = mPreferences.getString(
+                  CameraSettings.KEY_ANTIBANDING,
+@@ -2833,7 +2826,7 @@ public class VideoModule implements CameraModule,
+              }
+              Log.v(TAG, "rate = "+rate);
+              if ( (timeLapseInterval != 0) ||
+-                  (disMode.equals("enable") && (rate > PERSIST_EIS_MAX_FPS)) ||
++                  (disMode.equals("on") && (rate > PERSIST_EIS_MAX_FPS)) ||
+                   ((hdr != null) && (!hdr.equals("off"))) ) {
+                 Log.v(TAG,"HDR/DIS/Time Lapse ON for HFR/HSR selection, turning HFR/HSR off");
+                 ParametersWrapper.setVideoHighFrameRate(mParameters, "off");
+@@ -2846,12 +2839,12 @@ public class VideoModule implements CameraModule,
+         Size biggestSize = mParameters.getSupportedPictureSizes().get(0);
+ 
+         if (biggestSize.width <= videoWidth || biggestSize.height <= videoHeight) {
+-            if (disMode.equals("enable")) {
++            if (disMode.equals("on")) {
+                 Log.v(TAG,"DIS is not supported for this video quality");
+                 RotateTextToast.makeText(mActivity, R.string.error_app_unsupported_dis,
+                                Toast.LENGTH_LONG).show();
+-                mParameters.set(CameraSettings.KEY_QC_DIS_MODE, "disable");
+-                mUI.overrideSettings(CameraSettings.KEY_DIS,"disable");
++                mParameters.set(CameraSettings.KEY_QC_DIS_MODE, "off");
++                mUI.overrideSettings(CameraSettings.KEY_DIS, "off");
+                 mIsDISEnabled = false;
+             }
+         }
+@@ -2964,13 +2957,6 @@ public class VideoModule implements CameraModule,
+ 
+         mParameters.set(CameraUtil.RECORDING_HINT, CameraUtil.TRUE);
+ 
+-        // Enable video stabilization. Convenience methods not available in API
+-        // level <= 14
+-        String vstabSupported = mParameters.get("video-stabilization-supported");
+-        if ("true".equals(vstabSupported)) {
+-            mParameters.set("video-stabilization", "true");
+-        }
+-
+         // Set picture size.
+         // The logic here is different from the logic in still-mode camera.
+         // There we determine the preview size based on the picture size, but
+-- 
+2.7.4
+

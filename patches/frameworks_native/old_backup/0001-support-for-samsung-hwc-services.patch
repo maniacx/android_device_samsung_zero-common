@@ -1,0 +1,95 @@
+From 40512f604f0e7c17a598eeb83916ffc086441b00 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sat, 17 Mar 2018 20:02:31 +0400
+Subject: [PATCH 1/2] support for samsung hwc services
+
+---
+ services/surfaceflinger/Android.mk              | 12 ++++++++++++
+ services/surfaceflinger/SurfaceFlinger_hwc1.cpp | 20 ++++++++++++++++++++
+ 2 files changed, 32 insertions(+)
+
+diff --git a/services/surfaceflinger/Android.mk b/services/surfaceflinger/Android.mk
+index fab3795..601da0d 100644
+--- a/services/surfaceflinger/Android.mk
++++ b/services/surfaceflinger/Android.mk
+@@ -107,6 +107,18 @@ LOCAL_EXPORT_SHARED_LIBRARY_HEADERS := \
+ 
+ LOCAL_CFLAGS += -Wall -Werror -Wunused -Wunreachable-code -std=c++1z
+ 
++    LOCAL_CFLAGS += -DUSES_HWC_SERVICES
++    LOCAL_SHARED_LIBRARIES += libExynosHWCService
++    LOCAL_C_INCLUDES += \
++        $(TOP)/hardware/samsung_slsi-$(TARGET_SLSI_VARIANT)/$(TARGET_BOARD_PLATFORM)/libhwcService \
++        $(TOP)/hardware/samsung_slsi-$(TARGET_SLSI_VARIANT)/$(TARGET_BOARD_PLATFORM)/include \
++        $(TOP)/hardware/samsung_slsi-$(TARGET_SLSI_VARIANT)/$(TARGET_SOC)/include \
++        $(TOP)/hardware/samsung_slsi-$(TARGET_SLSI_VARIANT)/$(TARGET_SOC)/libhwcmodule \
++        $(TOP)/hardware/samsung_slsi-$(TARGET_SLSI_VARIANT)/exynos/libhwc \
++        $(TOP)/hardware/samsung_slsi-$(TARGET_SLSI_VARIANT)/exynos/include \
++        $(TOP)/hardware/samsung_slsi-$(TARGET_SLSI_VARIANT)/exynos/libexynosutils \
++        $(TOP)/system/core/libsync/include
++
+ include $(BUILD_SHARED_LIBRARY)
+ 
+ ###############################################################
+diff --git a/services/surfaceflinger/SurfaceFlinger_hwc1.cpp b/services/surfaceflinger/SurfaceFlinger_hwc1.cpp
+index 0486194..ea63cc9 100644
+--- a/services/surfaceflinger/SurfaceFlinger_hwc1.cpp
++++ b/services/surfaceflinger/SurfaceFlinger_hwc1.cpp
+@@ -83,6 +83,7 @@
+ 
+ #include "RenderEngine/RenderEngine.h"
+ #include <cutils/compiler.h>
++#include "IExynosHWC.h"
+ 
+ #include <android/hardware/configstore/1.0/ISurfaceFlingerConfigs.h>
+ #include <configstore/Utils.h>
+@@ -131,6 +132,7 @@ bool SurfaceFlinger::useHwcForRgbToYuv;
+ uint64_t SurfaceFlinger::maxVirtualDisplaySize;
+ bool SurfaceFlinger::hasSyncFramework;
+ int64_t SurfaceFlinger::maxFrameBufferAcquiredBuffers;
++static bool notifyPSRExit = true;
+ 
+ SurfaceFlinger::SurfaceFlinger()
+     :   BnSurfaceComposer(),
+@@ -361,6 +363,12 @@ void SurfaceFlinger::bootFinished()
+     // can choose where to stop the animation.
+     property_set("service.bootanim.exit", "1");
+ 
++    sp<IServiceManager> sm = defaultServiceManager();
++    sp<android::IExynosHWCService> hwc =
++        interface_cast<android::IExynosHWCService>(sm->getService(String16("Exynos.HWCService")));
++    ALOGD("boot finished. Inform HWC");
++    hwc->setBootFinished();
++
+     const int LOGTAG_SF_STOP_BOOTANIM = 60110;
+     LOG_EVENT_LONG(LOGTAG_SF_STOP_BOOTANIM,
+                    ns2ms(systemTime(SYSTEM_TIME_MONOTONIC)));
+@@ -983,6 +991,17 @@ void SurfaceFlinger::signalTransaction() {
+ }
+ 
+ void SurfaceFlinger::signalLayerUpdate() {
++    if (notifyPSRExit) {
++        notifyPSRExit = false;
++        sp<IServiceManager> sm = defaultServiceManager();
++        sp<IExynosHWCService> hwcService =
++            interface_cast<android::IExynosHWCService>(
++                sm->getService(String16("Exynos.HWCService")));
++        if (hwcService != NULL)
++            hwcService->notifyPSRExit();
++        else
++            ALOGE("HWCService::notifyPSRExit failed");
++    }
+     mEventQueue.invalidate();
+ }
+ 
+@@ -1167,6 +1186,7 @@ void SurfaceFlinger::handleMessageRefresh() {
+     doDebugFlashRegions();
+     doComposition();
+     postComposition(refreshStartTime);
++    notifyPSRExit = true;
+ }
+ 
+ void SurfaceFlinger::doDebugFlashRegions()
+-- 
+2.7.4
+

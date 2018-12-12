@@ -1,0 +1,142 @@
+From dafa851660d31153db40e6e62d897301699f01d6 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Tue, 15 May 2018 21:33:56 +0400
+Subject: [PATCH 07/14] exynos5camera: Enable Realtime HDR for video recordings
+
+Change-Id: I0644b6a83ceabba1ebef861297843994422609fb
+---
+ res/values/qcomarrays.xml                  |  2 ++
+ res/values/qcomstrings.xml                 |  2 ++
+ src/com/android/camera/CameraSettings.java | 23 +++++++++++++++++------
+ src/com/android/camera/VideoMenu.java      |  1 +
+ src/com/android/camera/VideoModule.java    |  6 +-----
+ 5 files changed, 23 insertions(+), 11 deletions(-)
+
+diff --git a/res/values/qcomarrays.xml b/res/values/qcomarrays.xml
+index c7b29d8..d98ff1a 100755
+--- a/res/values/qcomarrays.xml
++++ b/res/values/qcomarrays.xml
+@@ -685,11 +685,13 @@
+     <string-array name="pref_camera_video_hdr_entries" translatable="false">
+         <item>@string/pref_camera_video_hdr_entry_off</item>
+         <item>@string/pref_camera_video_hdr_entry_on</item>
++        <item>@string/pref_camera_video_hdr_entry_auto</item>
+     </string-array>
+ 
+     <string-array name="pref_camera_video_hdr_entryvalues" translatable="false">
+         <item>@string/pref_camera_video_hdr_value_off</item>
+         <item>@string/pref_camera_video_hdr_value_on</item>
++        <item>@string/pref_camera_video_hdr_value_auto</item>
+     </string-array>
+ 
+     <!-- Camera Preferences Selectable Advanced features dialog box entries -->
+diff --git a/res/values/qcomstrings.xml b/res/values/qcomstrings.xml
+index 37ca431..f16b909 100755
+--- a/res/values/qcomstrings.xml
++++ b/res/values/qcomstrings.xml
+@@ -216,9 +216,11 @@
+     <!-- Settings screen, Video HDR location dialog choices -->
+     <string name="pref_camera_video_hdr_entry_off">Off</string>
+     <string name="pref_camera_video_hdr_entry_on">On</string>
++    <string name="pref_camera_video_hdr_entry_auto">Auto</string>
+ 
+     <string name="pref_camera_video_hdr_value_off" translatable="false">off</string>
+     <string name="pref_camera_video_hdr_value_on" translatable="false">on</string>
++    <string name="pref_camera_video_hdr_value_auto" translatable="false">auto</string>
+ 
+     <!-- Settings screen, CDS location dialog choices -->
+     <string name="pref_camera_cds_entry_off">Off</string>
+diff --git a/src/com/android/camera/CameraSettings.java b/src/com/android/camera/CameraSettings.java
+index 78b3476..ba980bc 100644
+--- a/src/com/android/camera/CameraSettings.java
++++ b/src/com/android/camera/CameraSettings.java
+@@ -596,6 +596,14 @@ public class CameraSettings {
+         return split(str);
+     }
+ 
++    public static List<String> getVideoHdrModes(Parameters params) {
++        String str = params.get(KEY_SUPPORTED_RT_HDR);
++        if (str == null) {
++            return null;
++        }
++        return split(str);
++    }
++
+     public static List<String> getSupportedDISModes(Parameters params) {
+         String str = params.get(KEY_QC_SUPPORTED_DIS_MODES);
+         if (str == null) {
+@@ -856,7 +864,6 @@ public class CameraSettings {
+         ListPreference faceRC = group.findPreference(KEY_FACE_RECOGNITION);
+         ListPreference jpegQuality = group.findPreference(KEY_JPEG_QUALITY);
+         ListPreference videoSnapSize = group.findPreference(KEY_VIDEO_SNAPSHOT_SIZE);
+-        ListPreference videoHdr = group.findPreference(KEY_VIDEO_HDR);
+         ListPreference pictureFormat = group.findPreference(KEY_PICTURE_FORMAT);
+         ListPreference longShot = group.findPreference(KEY_LONGSHOT);
+         ListPreference auto_hdr = group.findPreference(KEY_AUTO_HDR);
+@@ -973,11 +980,6 @@ public class CameraSettings {
+                     denoise, ParametersWrapper.getSupportedDenoiseModes(mParameters));
+         }
+ 
+-        if (videoHdr != null) {
+-            filterUnsupportedOptions(group,
+-                    videoHdr, ParametersWrapper.getSupportedVideoHDRModes(mParameters));
+-        }
+-
+         if (colorEffect != null) {
+             filterUnsupportedOptions(group,
+                     colorEffect, mParameters.getSupportedColorEffects());
+@@ -1100,6 +1102,7 @@ public class CameraSettings {
+         ListPreference videoEffect = group.findPreference(KEY_VIDEO_EFFECT);
+         ListPreference cameraHdr = group.findPreference(KEY_CAMERA_HDR);
+         ListPreference meteringMode = group.findPreference(KEY_METERING_MODE);
++        ListPreference videoHdr = group.findPreference(KEY_VIDEO_HDR);
+         ListPreference disMode = group.findPreference(KEY_DIS);
+         ListPreference cameraHdrPlus = group.findPreference(KEY_CAMERA_HDR_PLUS);
+         ListPreference powerShutter = group.findPreference(KEY_POWER_SHUTTER);
+@@ -1209,6 +1212,14 @@ public class CameraSettings {
+                 removePreference(group, meteringMode.getKey());
+             }
+         }
++        if (videoHdr != null) {
++            if (getVideoHdrModes(mParameters) != null) {
++                filterUnsupportedOptions(group,
++                    videoHdr, getVideoHdrModes(mParameters));
++            } else {
++                removePreference(group, videoHdr.getKey());
++            }
++        }
+         if (disMode != null) {
+             filterUnsupportedOptions(group,
+                     disMode, getSupportedDISModes(mParameters));
+diff --git a/src/com/android/camera/VideoMenu.java b/src/com/android/camera/VideoMenu.java
+index e486017..d2735f9 100644
+--- a/src/com/android/camera/VideoMenu.java
++++ b/src/com/android/camera/VideoMenu.java
+@@ -123,6 +123,7 @@ public class VideoMenu extends MenuController
+                 CameraSettings.KEY_VIDEOCAMERA_FOCUS_TIME,
+                 CameraSettings.KEY_VIDEO_HIGH_FRAME_RATE,
+                 CameraSettings.KEY_DIS,
++                CameraSettings.KEY_VIDEO_HDR,
+                 CameraSettings.KEY_POWER_SHUTTER,
+                 CameraSettings.KEY_MAX_BRIGHTNESS
+         };
+diff --git a/src/com/android/camera/VideoModule.java b/src/com/android/camera/VideoModule.java
+index 1473248..d7731da 100644
+--- a/src/com/android/camera/VideoModule.java
++++ b/src/com/android/camera/VideoModule.java
+@@ -2815,11 +2815,7 @@ public class VideoModule implements CameraModule,
+                 CameraSettings.KEY_VIDEO_HDR,
+                 mActivity.getString(R.string.pref_camera_video_hdr_default));
+         Log.v(TAG, "Video HDR Setting =" + videoHDR);
+-        if (isSupported(videoHDR,
+-                ParametersWrapper.getSupportedVideoHDRModes(mParameters))) {
+-            ParametersWrapper.setVideoHDRMode(mParameters, videoHDR);
+-        } else
+-            ParametersWrapper.setVideoHDRMode(mParameters, "off");
++        mParameters.set(CameraSettings.KEY_RT_HDR,videoHDR);
+ 
+         //HFR/HSR recording not supported with DIS,TimeLapse,HDR option
+         String hfr = ParametersWrapper.getVideoHighFrameRate(mParameters);
+-- 
+2.7.4
+

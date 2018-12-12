@@ -1,0 +1,187 @@
+From 614d6c311d81a83ef133eebd88c4bcc392900187 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Tue, 15 May 2018 16:10:11 +0400
+Subject: [PATCH 03/14] exynos5camera: Add samsung metering modes spot, matrix,
+ center
+
+Change-Id: I039f4751d67710f605ea4352142f74173c3a62d7
+---
+ res/values/qcomarrays.xml                  | 13 +++++++++++++
+ res/values/qcomstrings.xml                 | 17 +++++++++++++++++
+ res/xml/camera_preferences.xml             |  7 +++++++
+ src/com/android/camera/CameraSettings.java | 22 ++++++++++++++++++++++
+ src/com/android/camera/PhotoMenu.java      |  1 +
+ src/com/android/camera/PhotoModule.java    |  9 +++++++++
+ 6 files changed, 69 insertions(+)
+
+diff --git a/res/values/qcomarrays.xml b/res/values/qcomarrays.xml
+index 1077357..8fcd7c3 100755
+--- a/res/values/qcomarrays.xml
++++ b/res/values/qcomarrays.xml
+@@ -942,5 +942,18 @@
+         <item>10</item>
+     </string-array>
+ 
++    <!-- Camera Preferences Metering Modes dialog box entries -->
++    <string-array name="pref_camera_metering_mode_entries" translatable="false">
++        <item>@string/pref_camera_metering_mode_entry_spot</item>
++        <item>@string/pref_camera_metering_mode_entry_center</item>
++        <item>@string/pref_camera_metering_mode_entry_matrix</item>
++    </string-array>
++
++    <string-array name="pref_camera_metering_mode_entryvalues" translatable="false">
++         <item>@string/pref_camera_metering_mode_value_spot</item>
++         <item>@string/pref_camera_metering_mode_value_center</item>
++         <item>@string/pref_camera_metering_mode_value_matrix</item>
++    </string-array>
++
+ </resources>
+ 
+diff --git a/res/values/qcomstrings.xml b/res/values/qcomstrings.xml
+index 617ad47..4306363 100755
+--- a/res/values/qcomstrings.xml
++++ b/res/values/qcomstrings.xml
+@@ -1121,5 +1121,22 @@
+     <string name="pref_camera2_initial_camera_entry_bayer">Bayer</string>
+     <string name="pref_camera2_initial_camera_entry_mono">Mono</string>
+     <string name="pref_camera2_initial_camera_entry_front">Front</string>
++
++    <!-- Settings screen, metering mode title -->
++    <string name="pref_camera_metering_mode_title">Metering mode</string>
++
++    <!-- Default metering modes setting. Do not translate. -->
++    <string name="pref_camera_metering_mode_default" translatable="false">center</string>
++
++    <!-- Settings screen, Selectable Zone Af dialog radio button choices -->
++    <string name="pref_camera_metering_mode_entry_spot">Spot</string>
++    <string name="pref_camera_metering_mode_entry_center">Center</string>
++    <string name="pref_camera_metering_mode_entry_matrix">Matrix</string>
++
++    <!-- Auto exposure entry values. Do not translate. -->
++    <string name="pref_camera_metering_mode_value_spot" translatable="false">spot</string>
++    <string name="pref_camera_metering_mode_value_center" translatable="false">center</string>
++    <string name="pref_camera_metering_mode_value_matrix" translatable="false">matrix</string>
++
+ </resources>
+ 
+diff --git a/res/xml/camera_preferences.xml b/res/xml/camera_preferences.xml
+index a5fc85c..6feafb1 100755
+--- a/res/xml/camera_preferences.xml
++++ b/res/xml/camera_preferences.xml
+@@ -323,6 +323,13 @@
+             camera:entries="@array/pref_camera_selectablezoneaf_entries"
+             camera:entryValues="@array/pref_camera_selectablezoneaf_entryvalues" />
+     <IconListPreference
++            camera:key="pref_camera_metering_mode_key"
++            camera:defaultValue="@string/pref_camera_metering_mode_default"
++            camera:title="@string/pref_camera_metering_mode_title"
++            camera:singleIcon="@drawable/ic_settings_focus_zone"
++            camera:entries="@array/pref_camera_metering_mode_entries"
++            camera:entryValues="@array/pref_camera_metering_mode_entryvalues" />
++    <IconListPreference
+             camera:key="pref_camera_zsl_key"
+             camera:defaultValue="@string/pref_camera_zsl_default"
+             camera:title="@string/pref_camera_zsl_title"
+diff --git a/src/com/android/camera/CameraSettings.java b/src/com/android/camera/CameraSettings.java
+index 2db616b..9d56605 100644
+--- a/src/com/android/camera/CameraSettings.java
++++ b/src/com/android/camera/CameraSettings.java
+@@ -144,6 +144,9 @@ public class CameraSettings {
+     public static final String KEY_BOKEH_MPO = "pref_camera_bokeh_mpo_key";
+     public static final String KEY_BOKEH_BLUR_VALUE = "pref_camera_bokeh_blur_degree_key";
+ 
++// Samsung
++    public static final String KEY_METERING_MODE = "pref_camera_metering_mode_key";
++
+     private static final String KEY_QC_SUPPORTED_AE_BRACKETING_MODES = "ae-bracket-hdr-values";
+     private static final String KEY_QC_SUPPORTED_AF_BRACKETING_MODES = "af-bracket-values";
+     private static final String KEY_QC_SUPPORTED_RE_FOCUS_MODES = "re-focus-values";
+@@ -191,6 +194,7 @@ public class CameraSettings {
+ 
+ //  Added for Samsung
+     private static final String KEY_SUPPORTED_RT_HDR = "rt-hdr-values";
++    private static final String KEY_METERING_VALUES = "metering-values";
+ 
+     public static final String KEY_CURRENT_SATURATION = "saturation";
+     public static final String KEY_MIN_SATURATION = "saturation-min";
+@@ -199,6 +203,7 @@ public class CameraSettings {
+     public static final String KEY_MIN_SHARPNESS = "sharpness-min";
+     public static final String KEY_MAX_SHARPNESS = "sharpness-max";
+     public static final String KEY_RT_HDR = "rt-hdr";
++    public static final String KEY_METERING = "metering";
+ 
+     public static final String RTHDR_ON = "on";
+     public static final String RTHDR_OFF = "off";
+@@ -663,6 +668,14 @@ public class CameraSettings {
+         return split(str);
+     }
+ 
++    public static List<String> getMeteringModes(Parameters params) {
++        String str = params.get(KEY_METERING_VALUES);
++        if (str == null) {
++            return null;
++        }
++        return split(str);
++    }
++
+     public List<String> getSupportedAdvancedFeatures(Parameters params) {
+         String str = params.get(KEY_QC_SUPPORTED_AF_BRACKETING_MODES);
+         str += ',' + params.get(KEY_QC_SUPPORTED_CF_MODES);
+@@ -1086,6 +1099,7 @@ public class CameraSettings {
+                 group.findPreference(KEY_VIDEOCAMERA_FLASH_MODE);
+         ListPreference videoEffect = group.findPreference(KEY_VIDEO_EFFECT);
+         ListPreference cameraHdr = group.findPreference(KEY_CAMERA_HDR);
++        ListPreference meteringMode = group.findPreference(KEY_METERING_MODE);
+         ListPreference disMode = group.findPreference(KEY_DIS);
+         ListPreference cameraHdrPlus = group.findPreference(KEY_CAMERA_HDR_PLUS);
+         ListPreference powerShutter = group.findPreference(KEY_POWER_SHUTTER);
+@@ -1187,6 +1201,14 @@ public class CameraSettings {
+                 removePreference(group, cameraHdr.getKey());
+             }
+         }
++        if (meteringMode != null) {
++            if (getMeteringModes(mParameters) != null) {
++                filterUnsupportedOptions(group,
++                    meteringMode, getMeteringModes(mParameters));
++            } else {
++                removePreference(group, meteringMode.getKey());
++            }
++        }
+         if (disMode != null) {
+             filterUnsupportedOptions(group,
+                     disMode, getSupportedDISModes(mParameters));
+diff --git a/src/com/android/camera/PhotoMenu.java b/src/com/android/camera/PhotoMenu.java
+index 4671290..0793d7e 100644
+--- a/src/com/android/camera/PhotoMenu.java
++++ b/src/com/android/camera/PhotoMenu.java
+@@ -195,6 +195,7 @@ public class PhotoMenu extends MenuController
+                 CameraSettings.KEY_WHITE_BALANCE,
+                 CameraSettings.KEY_QC_CHROMA_FLASH,
+                 CameraSettings.KEY_FOCUS_TIME,
++                CameraSettings.KEY_METERING_MODE,
+                 CameraSettings.KEY_SHUTTER_SPEED,
+                 CameraSettings.KEY_REDEYE_REDUCTION,
+                 CameraSettings.KEY_SELFIE_MIRROR,
+diff --git a/src/com/android/camera/PhotoModule.java b/src/com/android/camera/PhotoModule.java
+index c40c67a..8a4ec0c 100644
+--- a/src/com/android/camera/PhotoModule.java
++++ b/src/com/android/camera/PhotoModule.java
+@@ -3481,6 +3481,15 @@ public class PhotoModule
+             }
+         }
+ 
++        // Set Metering mode parameter.
++        String metering = mPreferences.getString(
++                CameraSettings.KEY_METERING_MODE,
++                mActivity.getString(R.string.pref_camera_metering_mode_default));
++        if (CameraUtil.isSupported(metering,
++                CameraSettings.getMeteringModes(mParameters))) {
++            mParameters.set(CameraSettings.KEY_METERING, metering);
++        }
++
+         // Set Selectable Zone Af parameter.
+         String selectableZoneAf = mPreferences.getString(
+             CameraSettings.KEY_SELECTABLE_ZONE_AF,
+-- 
+2.7.4
+
