@@ -2958,8 +2958,6 @@ static int adev_open(const hw_module_t *module, const char *name,
                      hw_device_t **device)
 {
     struct audio_device *adev;
-    char user[PROPERTY_VALUE_MAX];
-    char host[PROPERTY_VALUE_MAX];
     char voice_config[PROPERTY_VALUE_MAX];
 
     int ret;
@@ -2972,13 +2970,7 @@ static int adev_open(const hw_module_t *module, const char *name,
     }
 
     *device = NULL;
-
-    property_get("ro.build.user", user, "more");
-    property_get("ro.build.host", host, "more");
-    if  (!((!strcmp(user,"mac")) && (!strcmp(host,"macs18max")))) {
-        return -ENOMEM;
-    }
-
+    
     adev = calloc(1, sizeof(struct audio_device));
     if (adev == NULL) {
         ALOGV("%s: adev is null", __func__);
